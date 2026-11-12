@@ -1,0 +1,17 @@
+
+# ============================================
+# THE INVISIBLE HEALER
+# Phase 01 - Runtime Dependencies
+# ============================================
+
+# FastAPI Framework
+fastapi>=0.115.0,<1.0.0
+
+# ASGI Application Server
+uvicorn[standard]>=0.30.0,<1.0.0
+
+# Data Validation
+pydantic>=2.8.0,<3.0.0
+
+# Environment Configuration
+pydantic-settings>=2.4.0,<3.0.0
