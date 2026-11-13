@@ -1,31 +1,35 @@
-
 """
 The Invisible Healer
-Shared FastAPI Dependencies
+Shared API Dependencies
 
-Responsibilities:
-    - Expose reusable dependency providers.
-    - Separate route definitions from configuration.
-    - Provide consistent dependency injection.
-    - Support dependency overrides in tests.
+Phase 01:
+    Application configuration dependency.
 
-Phase:
-    01 - Project Skeleton
+Phase 03:
+    Database session dependency.
 
-Future additions:
-    - Database session dependency.
-    - Authenticated admin dependency.
-    - Role permission dependency.
-    - Request context dependency.
+Purpose:
+    Provide reusable, typed FastAPI
+    dependencies across API modules.
+
+Future:
+    - Admin authentication
+    - Role-based authorization
+    - Clinical scope validation
+    - Patient context
 """
 
 from typing import Annotated
+
 from fastapi import Depends
+from sqlalchemy.orm import Session
+
 from app.core.config import Settings, get_settings
+from app.db.session import get_db
 
-
-# -----------------------------------------
-# Application configuration dependency
-# -----------------------------------------
+# ============================================
+# APPLICATION SETTINGS DEPENDENCY
+# ============================================
 
 SettingsDependency = Annotated[Settings, Depends(get_settings)]
+DatabaseSessionDependency = Annotated[Session, Depends(get_db)]

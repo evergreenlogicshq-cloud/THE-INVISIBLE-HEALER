@@ -1,4 +1,3 @@
-
 """
 Phase 01 - Configuration Unit Tests
 
@@ -12,13 +11,10 @@ Acceptance requirements:
 
 import pytest
 from pydantic import ValidationError
+
 from app.core.config import Settings
 
-
-VALID_DATABASE_URL = (
-    "postgresql+psycopg://"
-    "user:password@localhost:5432/test_db"
-)
+VALID_DATABASE_URL = "postgresql+psycopg://user:password@localhost:5432/test_db"
 
 
 def build_settings(**overrides):
@@ -65,8 +61,7 @@ def test_invalid_database_scheme():
     """
 
     with pytest.raises(ValidationError):
-        build_settings(
-            DATABASE_URL="sqlite:///test.db")
+        build_settings(DATABASE_URL="sqlite:///test.db")
 
 
 def test_missing_database_name():

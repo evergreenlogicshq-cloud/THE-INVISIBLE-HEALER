@@ -1,7 +1,7 @@
 
 # ============================================
 # THE INVISIBLE HEALER
-# Phase 01 - Runtime Dependencies
+# Phase 03 - Runtime Dependencies
 # ============================================
 
 # FastAPI Framework
@@ -15,3 +15,13 @@ pydantic>=2.8.0,<3.0.0
 
 # Environment Configuration
 pydantic-settings>=2.4.0,<3.0.0
+
+# ============================================
+# PHASE 03 - DATABASE
+# ============================================
+
+# SQLAlchemy ORM and connection management
+SQLAlchemy>=2.0.36,<3.0.0
+
+# PostgreSQL driver - Psycopg 3
+psycopg[binary]>=3.2.0,<4.0.0

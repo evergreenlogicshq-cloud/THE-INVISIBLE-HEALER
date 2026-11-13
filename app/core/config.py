@@ -1,4 +1,3 @@
-
 """
 The Invisible Healer
 Core Configuration Module
@@ -23,6 +22,7 @@ Important:
 from functools import lru_cache
 from typing import Literal
 from urllib.parse import urlsplit
+
 from pydantic import (
     Field,
     SecretStr,
@@ -30,7 +30,6 @@ from pydantic import (
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 EnvironmentType = Literal["development", "testing", "production"]
 
@@ -63,7 +62,9 @@ class Settings(BaseSettings):
     # Supabase Storage configuration
     # -----------------------------------------
     SUPABASE_URL: str | None = None
-    SUPABASE_SERVICE_ROLE_KEY: SecretStr | None = Field(default=None, repr=False, exclude=True)
+    SUPABASE_SERVICE_ROLE_KEY: SecretStr | None = Field(
+        default=None, repr=False, exclude=True
+    )
     SUPABASE_STORAGE_BUCKET: str = "clinical-documents"
     STORAGE_ENABLED: bool = False
     # -----------------------------------------
@@ -76,7 +77,7 @@ class Settings(BaseSettings):
     ADMIN_SESSIONS_ENABLED: bool = False
     SESSION_COOKIE_SECURE: bool = True
     SESSION_COOKIE_HTTPONLY: bool = True
-    SESSION_COOKIE_SAMESITE: Literal[ "lax", "strict", "none"] = "lax"
+    SESSION_COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
     SESSION_MAX_AGE_SECONDS: int = Field(default=3600, ge=300, le=86400)
     # -----------------------------------------
     # Optional AI provider credentials
@@ -87,6 +88,17 @@ class Settings(BaseSettings):
     # Logging configuration
     # -----------------------------------------
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+    # =========================================
+    # PHASE 03 - DATABASE CONNECTION POOL
+    # =========================================
+
+    DB_POOL_SIZE: int = Field(default=5, ge=1, le=50)
+    DB_MAX_OVERFLOW: int = Field(default=5, ge=0, le=50)
+    DB_POOL_TIMEOUT: int = Field(default=10, ge=1, le=120)
+    DB_POOL_RECYCLE: int = Field(default=1800, ge=30, le=86400)
+    DB_CONNECT_TIMEOUT: int = Field(default=10, ge=1, le=60)
+    DB_ECHO: bool = False
+
     # -----------------------------------------
     # Pydantic settings configuration
     # -----------------------------------------
@@ -98,6 +110,7 @@ class Settings(BaseSettings):
         validate_default=True,
         hide_input_in_errors=True,
     )
+
     # -----------------------------------------
     # Normalize optional secrets
     # -----------------------------------------
@@ -171,8 +184,7 @@ class Settings(BaseSettings):
 
         except (ValueError, TypeError):
             raise ValueError(
-                "Invalid DATABASE_URL. "
-                "Check the PostgreSQL connection format."
+                "Invalid DATABASE_URL. Check the PostgreSQL connection format."
             ) from None
 
         return value
@@ -193,8 +205,7 @@ class Settings(BaseSettings):
 
         if value == "/" or value.endswith("/"):
             raise ValueError(
-                "API_V1_PREFIX must be a non-root "
-                "path without a trailing slash."
+                "API_V1_PREFIX must be a non-root path without a trailing slash."
             )
 
         return value
@@ -236,7 +247,9 @@ class Settings(BaseSettings):
                 raise ValueError("Unexpected URL path.")
 
         except ValueError:
-            raise ValueError("SUPABASE_URL must be a valid HTTPS project URL.") from None
+            raise ValueError(
+                "SUPABASE_URL must be a valid HTTPS project URL."
+            ) from None
 
         return value.rstrip("/")
 
@@ -257,22 +270,18 @@ class Settings(BaseSettings):
         if self.APP_ENV == "production" and self.DEBUG:
             raise ValueError("DEBUG cannot be enabled in production.")
 
-        if self.APP_ENV == "production":
-            if self.LOG_LEVEL == "DEBUG":
-                raise ValueError("DEBUG logging is disabled in production.")
+        if self.APP_ENV == "production" and self.LOG_LEVEL == "DEBUG":
+            raise ValueError("DEBUG logging is disabled in production.")
 
         # Storage must have both required values
         # before it can be activated.
 
-        if self.STORAGE_ENABLED:
-            if (
-                self.SUPABASE_URL is None
-                or self.SUPABASE_SERVICE_ROLE_KEY is None
-            ):
-                raise ValueError(
-                    "Storage is enabled but Supabase "
-                    "credentials are incomplete."
-                )
+        if self.STORAGE_ENABLED and (
+            self.SUPABASE_URL is None or self.SUPABASE_SERVICE_ROLE_KEY is None
+        ):
+            raise ValueError(
+                "Storage is enabled but Supabase credentials are incomplete."
+            )
 
         # Check the session secret only when
         # Admin sessions are enabled.
@@ -280,17 +289,13 @@ class Settings(BaseSettings):
         if self.ADMIN_SESSIONS_ENABLED:
             if self.SESSION_SECRET is None:
                 raise ValueError(
-                    "SESSION_SECRET is required when "
-                    "Admin sessions are enabled."
+                    "SESSION_SECRET is required when Admin sessions are enabled."
                 )
 
             secret = self.SESSION_SECRET.get_secret_value()
 
             if len(secret) < 32:
-                raise ValueError(
-                    "SESSION_SECRET must contain "
-                    "at least 32 characters."
-                )
+                raise ValueError("SESSION_SECRET must contain at least 32 characters.")
 
             if (
                 self.SESSION_COOKIE_SAMESITE == "none"
@@ -301,14 +306,12 @@ class Settings(BaseSettings):
             if self.APP_ENV == "production":
                 if not self.SESSION_COOKIE_SECURE:
                     raise ValueError(
-                        "Secure session cookies are "
-                        "required in production."
+                        "Secure session cookies are required in production."
                     )
 
                 if not self.SESSION_COOKIE_HTTPONLY:
                     raise ValueError(
-                        "HttpOnly session cookies are "
-                        "required in production."
+                        "HttpOnly session cookies are required in production."
                     )
 
         return self
@@ -337,8 +340,7 @@ class Settings(BaseSettings):
         """
 
         return (
-            self.SUPABASE_URL is not None
-            and self.SUPABASE_SERVICE_ROLE_KEY is not None
+            self.SUPABASE_URL is not None and self.SUPABASE_SERVICE_ROLE_KEY is not None
         )
 
     @property

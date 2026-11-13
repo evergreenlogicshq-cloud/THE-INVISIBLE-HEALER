@@ -1,4 +1,3 @@
-
 """
 The Invisible Healer
 Phase 02 Configuration Security Tests
@@ -18,12 +17,11 @@ No network requests or database connections.
 
 import pytest
 from pydantic import ValidationError
+
 from app.core.config import Settings, get_settings
 
-
 TEST_DATABASE_URL = (
-    "postgresql+psycopg://"
-    "test_user:test_password@localhost:5432/test_db"
+    "postgresql+psycopg://test_user:test_password@localhost:5432/test_db"
 )
 
 
@@ -54,6 +52,7 @@ def build_settings(**overrides) -> Settings:
 # Core configuration
 # -----------------------------------------
 
+
 def test_phase2_settings_load():
     settings = build_settings()
     assert settings.APP_NAME == "The Invisible Healer"
@@ -75,6 +74,7 @@ def test_database_url_still_validated():
 # -----------------------------------------
 # Optional credentials
 # -----------------------------------------
+
 
 def test_optional_credentials_are_not_required():
     settings = build_settings()
@@ -102,6 +102,7 @@ def test_empty_optional_keys_become_none():
 # -----------------------------------------
 # Supabase Storage
 # -----------------------------------------
+
 
 def test_storage_disabled_without_credentials():
     settings = build_settings(STORAGE_ENABLED=False)
@@ -153,6 +154,7 @@ def test_supabase_rejects_embedded_credentials():
 # Admin session configuration
 # -----------------------------------------
 
+
 def test_admin_sessions_disabled_without_secret():
     settings = build_settings(ADMIN_SESSIONS_ENABLED=False)
     assert settings.admin_session_configured is False
@@ -186,6 +188,7 @@ def test_samesite_none_requires_secure_cookie():
 # -----------------------------------------
 # Production security
 # -----------------------------------------
+
 
 def test_production_debug_rejected():
     with pytest.raises(ValidationError):
@@ -226,6 +229,7 @@ def test_valid_production_configuration():
 # Secret representation and serialization
 # -----------------------------------------
 
+
 def test_secrets_are_masked():
     test_key = "TEST_SECRET_DO_NOT_EXPOSE_123"
 
@@ -255,6 +259,7 @@ def test_secrets_are_excluded_from_model_dump():
 # Cached settings
 # -----------------------------------------
 
+
 def test_settings_cache_returns_same_instance(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", TEST_DATABASE_URL)
     monkeypatch.setenv("APP_ENV", "testing")
@@ -272,6 +277,7 @@ def test_settings_cache_returns_same_instance(monkeypatch):
 # -----------------------------------------
 # Existing Phase 1 compatibility
 # -----------------------------------------
+
 
 def test_phase1_configuration_remains_compatible():
     settings = build_settings()

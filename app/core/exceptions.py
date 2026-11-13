@@ -1,4 +1,3 @@
-
 """
 The Invisible Healer
 Global Exception Handling
@@ -16,11 +15,11 @@ Phase:
 """
 
 import logging
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
-
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +78,9 @@ def register_exception_handlers(app: FastAPI) -> None:
     # -----------------------------------------
 
     @app.exception_handler(StarletteHTTPException)
-    async def http_error_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    async def http_error_handler(
+        request: Request, exc: StarletteHTTPException
+    ) -> JSONResponse:
         return JSONResponse(
             status_code=exc.status_code,
             content={
@@ -97,16 +98,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     # -----------------------------------------
 
     @app.exception_handler(RequestValidationError)
-    async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    async def validation_error_handler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
         errors = []
 
         for error in exc.errors():
             errors.append(
                 {
-                    "field": ".".join(
-                        str(part)
-                        for part in error["loc"]
-                    ),
+                    "field": ".".join(str(part) for part in error["loc"]),
                     "message": error["msg"],
                     "type": error["type"],
                 }
@@ -129,7 +129,9 @@ def register_exception_handlers(app: FastAPI) -> None:
     # -----------------------------------------
 
     @app.exception_handler(Exception)
-    async def unexpected_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    async def unexpected_error_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
         logger.error(
             "Unhandled exception at %s",
             request.url.path,
@@ -146,9 +148,7 @@ def register_exception_handlers(app: FastAPI) -> None:
                 "success": False,
                 "error": {
                     "code": "INTERNAL_SERVER_ERROR",
-                    "message": (
-                        "An unexpected server error occurred."
-                    ),
+                    "message": ("An unexpected server error occurred."),
                 },
             },
         )
