@@ -25,3 +25,10 @@ SQLAlchemy>=2.0.36,<3.0.0
 
 # PostgreSQL driver - Psycopg 3
 psycopg[binary]>=3.2.0,<4.0.0
+
+# ============================================
+# PHASE 04 - DATABASE MIGRATIONS
+# ============================================
+
+# Schema migration and version management
+alembic>=1.14.0,<2.0.0
