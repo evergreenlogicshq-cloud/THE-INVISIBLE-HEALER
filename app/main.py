@@ -2,40 +2,50 @@
 The Invisible Healer
 FastAPI Application Entry Point
 
-Phase 01:
-    Application skeleton and architecture.
-
-Phase 02:
-    Secrets and configuration hygiene.
-
-Phase 03:
-    SQLAlchemy database engine and session lifecycle.
+Phases:
+    01 - Application skeleton
+    02 - Configuration and secrets
+    03 - Database connection lifecycle
+    04 - Alembic migration infrastructure
+    05 - Jinja Admin shell and static assets
 
 Responsibilities:
-    - Application factory
-    - Configuration injection
-    - Database engine initialization
-    - Database session factory initialization
-    - Central API router registration
-    - Exception handler registration
-    - Application startup/shutdown lifecycle
-    - Connection pool cleanup
+    - Create the FastAPI application.
+    - Initialize application settings.
+    - Manage database engine lifecycle.
+    - Register centralized routes.
+    - Serve static CSS, JS and images.
+    - Register exception handlers.
+
+Architecture:
+    Modular FastAPI monolith.
+
+Important:
+    - No database tables are created here.
+    - No credentials are exposed to templates.
+    - Admin authentication belongs to Phase 06.
 """
 
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-
+from pathlib import Path
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import Engine
-
 from app.api.router import api_router
 from app.core.config import Settings, get_settings
 from app.core.exceptions import register_exception_handlers
 from app.db.session import create_database_engine, create_session_factory
 
+
 logger = logging.getLogger(__name__)
 
+# ============================================
+# APPLICATION PATHS
+# ============================================
+APP_DIR = Path(__file__).resolve().parent.parent
+STATIC_DIR = APP_DIR / "static"
 
 # ============================================
 # APPLICATION FACTORY
@@ -43,27 +53,30 @@ logger = logging.getLogger(__name__)
 
 
 def create_app(
-    settings: Settings | None = None, db_engine: Engine | None = None
+    settings: Settings | None = None,
+    db_engine: Engine | None = None,
 ) -> FastAPI:
     """
-    Create and configure the FastAPI application.
+    Create the FastAPI application.
 
     Args:
         settings:
-            Optional settings override.
-            Useful for automated testing.
+            Optional application settings.
+            Tests can inject isolated settings.
 
         db_engine:
-            Optional SQLAlchemy Engine override.
-            Allows integration and API tests
-            to inject an isolated test database.
+            Optional SQLAlchemy engine.
+            Tests can inject an SQLite engine.
 
     Returns:
         Configured FastAPI application.
 
-    Important:
-        A caller-provided engine remains owned
-        by the caller and is not disposed here.
+    Database ownership:
+        An internally created engine is disposed
+        during application shutdown.
+
+        A caller-provided engine is NOT disposed
+        by this application.
     """
 
     application_settings = settings if settings is not None else get_settings()
@@ -78,18 +91,16 @@ def create_app(
         Manage database infrastructure lifecycle.
 
         Startup:
-            - Configure engine.
-            - Configure session factory.
+            - Create or reuse database engine.
+            - Initialize session factory.
             - Register infrastructure on app.state.
 
         Shutdown:
-            - Dispose the application's own engine.
-            - Release pooled database connections.
+            - Dispose internally owned engine.
+            - Preserve externally owned engine.
 
-        A database connection is not mandatory
-        during application startup.
-
-        /health/ready verifies real connectivity.
+        Database availability is verified
+        separately by /health/ready.
         """
 
         logger.info(
@@ -119,10 +130,6 @@ def create_app(
 
             logger.info("Stopping %s", application_settings.APP_NAME)
 
-    # ========================================
-    # FASTAPI CONFIGURATION
-    # ========================================
-
     enable_docs = not application_settings.is_production
 
     application = FastAPI(
@@ -135,12 +142,31 @@ def create_app(
         openapi_url=("/openapi.json" if enable_docs else None),
         lifespan=lifespan,
     )
-    # ========================================
-    # APPLICATION STATE
-    # ========================================
+
     application.state.settings = application_settings
     # ========================================
-    # API ROUTERS
+    # PHASE 05 - STATIC FILES
+    # ========================================
+
+    # Starlette serves trusted application
+    # assets directly from this directory.
+    #
+    # Directory structure:
+    #   app/static/css/
+    #   app/static/js/
+    #   app/static/img/
+    #
+    # Static assets contain no secrets.
+    application.mount(
+        "/static",
+        StaticFiles(
+            directory=str(STATIC_DIR),
+            check_dir=True,
+        ),
+        name="static",
+    )
+    # ========================================
+    # APPLICATION ROUTERS
     # ========================================
     application.include_router(api_router)
     # ========================================

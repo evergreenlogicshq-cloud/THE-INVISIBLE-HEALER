@@ -1,0 +1,351 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <meta
+        name="description"
+        content="The Invisible Healer Administration"
+    >
+
+    <!--
+        CSRF integration placeholder.
+
+        This is NOT active CSRF protection.
+
+        Phase 06 must supply and validate tokens
+        before enabling state-changing forms.
+    -->
+    <meta
+        name="admin-csrf-token"
+        content="{{ csrf_token | default('', true) | e }}"
+    >
+
+    <title>
+        {% block title %}
+            {{ page_title | default('Admin') }}
+            | {{ app_name | default('The Invisible Healer') }}
+        {% endblock %}
+    </title>
+
+    <!-- ========================================
+         ADMIN STYLESHEET
+    ========================================= -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', path='/css/admin.css') }}"
+    >
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- ========================================
+         ACCESSIBILITY: SKIP NAVIGATION
+    ========================================= -->
+    <a
+        class="skip-link"
+        href="#main-content"
+    >
+        Skip to main content
+    </a>
+
+    <div class="admin-layout">
+
+        <!-- ====================================
+             MOBILE SIDEBAR OVERLAY
+        ===================================== -->
+        <div
+            class="sidebar-overlay"
+            data-sidebar-overlay
+            aria-hidden="true"
+        ></div>
+
+        <!-- ====================================
+             SIDEBAR
+        ===================================== -->
+        <aside
+            class="sidebar"
+            id="admin-sidebar"
+            aria-label="Admin navigation"
+        >
+
+            <!-- SIDEBAR HEADER -->
+            <div class="sidebar-header">
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="brand"
+                >
+                    <span
+                        class="brand-symbol"
+                        aria-hidden="true"
+                    >
+                        +
+                    </span>
+
+                    <span class="brand-copy">
+                        <strong>Invisible Healer</strong>
+                        <small>Administration</small>
+                    </span>
+                </a>
+
+                <!-- Mobile close button -->
+                <button
+                    type="button"
+                    class="sidebar-close"
+                    data-sidebar-close
+                    aria-label="Close navigation"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+            <!-- =================================
+                 PRIMARY NAVIGATION
+            ================================== -->
+            <nav
+                class="sidebar-nav"
+                aria-label="Primary navigation"
+            >
+
+                <!-- WORKSPACE -->
+                <p class="nav-heading">
+                    Workspace
+                </p>
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="nav-link {% if active_page == 'dashboard' %}active{% endif %}"
+                    {% if active_page == 'dashboard' %}
+                        aria-current="page"
+                    {% endif %}
+                >
+                    <span aria-hidden="true">▦</span>
+                    <span>Dashboard</span>
+                </a>
+
+                <!-- CLINICAL KNOWLEDGE -->
+                <p class="nav-heading">
+                    Clinical Knowledge
+                </p>
+
+                <span class="nav-link nav-disabled">
+                    <span aria-hidden="true">◇</span>
+                    <span>Medical Concepts</span>
+                    <small>09</small>
+                </span>
+
+                <span class="nav-link nav-disabled">
+                    <span aria-hidden="true">♡</span>
+                    <span>Health Issues</span>
+                    <small>10</small>
+                </span>
+
+                <span class="nav-link nav-disabled">
+                    <span aria-hidden="true">◉</span>
+                    <span>Symptoms</span>
+                    <small>10</small>
+                </span>
+
+                <span class="nav-link nav-disabled">
+                    <span aria-hidden="true">▣</span>
+                    <span>Products &amp; Remedies</span>
+                    <small>11</small>
+                </span>
+
+                <span class="nav-link nav-disabled">
+                    <span aria-hidden="true">⌁</span>
+                    <span>Relationships</span>
+                    <small>12</small>
+                </span>
+
+                <!-- EVIDENCE AND SAFETY -->
+                <p class="nav-heading">
+                    Evidence &amp; Safety
+                </p>
+
+                <span class="nav-link nav-disabled">
+                    <span aria-hidden="true">▤</span>
+                    <span>Documents</span>
+                    <small>17</small>
+                </span>
+
+                <span class="nav-link nav-disabled">
+                    <span aria-hidden="true">⬡</span>
+                    <span>Protocols &amp; Safety</span>
+                    <small>21</small>
+                </span>
+
+                <!-- SYSTEM -->
+                <p class="nav-heading">
+                    System
+                </p>
+
+                <span class="nav-link nav-disabled">
+                    <span aria-hidden="true">⚙</span>
+                    <span>User Management</span>
+                    <small>06</small>
+                </span>
+
+            </nav>
+
+            <!-- =================================
+                 SIDEBAR FOOTER
+            ================================== -->
+            <div class="sidebar-footer">
+
+                <div class="sidebar-version">
+                    <span>Application version</span>
+
+                    <strong>
+                        {{ app_version | default('0.1.0') }}
+                    </strong>
+                </div>
+
+                <p>
+                    Data-first clinical AI platform
+                </p>
+
+            </div>
+
+        </aside>
+
+        <!-- ====================================
+             MAIN APPLICATION AREA
+        ===================================== -->
+        <div class="main-area">
+
+            <!-- =================================
+                 TOP HEADER
+            ================================== -->
+            <header class="topbar">
+
+                <div class="topbar-left">
+
+                    <!-- Mobile navigation toggle -->
+                    <button
+                        type="button"
+                        class="menu-toggle"
+                        data-sidebar-toggle
+                        aria-label="Open navigation"
+                        aria-controls="admin-sidebar"
+                        aria-expanded="false"
+                    >
+                        <span aria-hidden="true">☰</span>
+                    </button>
+
+                    <!-- Breadcrumb navigation -->
+                    <div class="breadcrumb">
+                        <span>Administration</span>
+
+                        <span aria-hidden="true">/</span>
+
+                        <strong>
+                            {{ page_title | default('Dashboard') }}
+                        </strong>
+                    </div>
+
+                </div>
+
+                <div class="topbar-right">
+
+                    <!-- Current environment -->
+                    <span class="environment-badge">
+                        {{ environment | default('development') }}
+                    </span>
+
+                    <!--
+                        Display-only avatar.
+
+                        This is not an authenticated user.
+                        Real identity data will be added
+                        in Phase 06.
+                    -->
+                    <span
+                        class="admin-avatar"
+                        aria-hidden="true"
+                    >
+                        IH
+                    </span>
+
+                    <span class="sr-only">
+                        Authentication not yet configured
+                    </span>
+
+                </div>
+
+            </header>
+
+            <!-- =================================
+                 MAIN PAGE CONTENT
+            ================================== -->
+            <main
+                id="main-content"
+                class="main-content"
+                tabindex="-1"
+            >
+
+                <!--
+                    Reusable flash feedback.
+
+                    Preferred filename:
+                    feedback.html
+                -->
+                {% include "admin/feedback.html" %}
+
+                <!--
+                    Reusable form error summary.
+
+                    Preferred filename:
+                    form_errors.html
+                -->
+                {% include "admin/form_errors.html" %}
+
+                <!--
+                    Child templates insert
+                    page-specific content here.
+                -->
+                {% block content %}{% endblock %}
+
+            </main>
+
+            <!-- =================================
+                 APPLICATION FOOTER
+            ================================== -->
+            <footer class="main-footer">
+
+                <span>
+                    The Invisible Healer
+                </span>
+
+                <span>
+                    Internal engineering interface
+                </span>
+
+            </footer>
+
+        </div>
+
+    </div>
+
+    <!-- ========================================
+         ADMIN JAVASCRIPT
+    ========================================= -->
+    <script
+        src="{{ url_for('static', path='/js/admin.js') }}"
+        defer
+    ></script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

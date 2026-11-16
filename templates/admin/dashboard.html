@@ -1,0 +1,287 @@
+
+{% extends "admin/base.html" %}
+
+{% block title %}
+    Dashboard | {{ app_name }}
+{% endblock %}
+
+{% block content %}
+
+    <!-- =================================
+         DASHBOARD HEADER
+    ================================== -->
+    <section
+        class="page-heading"
+        aria-labelledby="dashboard-title"
+    >
+
+        <div>
+
+            <p class="eyebrow">
+                Administration Workspace
+            </p>
+
+            <h1 id="dashboard-title">
+                Dashboard
+            </h1>
+
+            <p class="page-description">
+                Manage the infrastructure and knowledge
+                lifecycle of The Invisible Healer.
+            </p>
+
+        </div>
+
+        <span class="phase-badge">
+            Phase 05
+        </span>
+
+    </section>
+
+    <!-- =================================
+         SECURITY NOTICE
+    ================================== -->
+    <section
+        class="information-banner"
+        aria-labelledby="security-notice-title"
+    >
+
+        <div class="banner-icon" aria-hidden="true">
+            i
+        </div>
+
+        <div>
+
+            <h2 id="security-notice-title">
+                Administration shell preview
+            </h2>
+
+            <p>
+                This interface is currently presentation-only.
+                Authentication, permissions, and protected
+                administration operations will be introduced
+                in subsequent implementation phases.
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- =================================
+         IMPLEMENTATION STATUS
+    ================================== -->
+    <section
+        class="dashboard-section"
+        aria-labelledby="status-title"
+    >
+
+        <div class="section-header">
+            <div>
+                <h2 id="status-title">
+                    Implementation Status
+                </h2>
+
+                <p>
+                    Current engineering milestones
+                </p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+
+            <article class="stat-card">
+
+                <span class="stat-label">
+                    Application Foundation
+                </span>
+
+                <strong class="stat-value">
+                    Phase 01–03
+                </strong>
+
+                <span class="stat-status complete">
+                    Present in project
+                </span>
+
+            </article>
+
+            <article class="stat-card">
+
+                <span class="stat-label">
+                    Database Migrations
+                </span>
+
+                <strong class="stat-value">
+                    Phase 04
+                </strong>
+
+                <span class="stat-status complete">
+                    Baseline implemented
+                </span>
+
+            </article>
+
+            <article class="stat-card">
+
+                <span class="stat-label">
+                    Admin Interface
+                </span>
+
+                <strong class="stat-value">
+                    Phase 05
+                </strong>
+
+                <span class="stat-status current">
+                    Shell implementation
+                </span>
+
+            </article>
+
+            <article class="stat-card">
+
+                <span class="stat-label">
+                    Admin Authentication
+                </span>
+
+                <strong class="stat-value">
+                    Phase 06
+                </strong>
+
+                <span class="stat-status pending">
+                    Not implemented
+                </span>
+
+            </article>
+
+        </div>
+
+    </section>
+
+    <!-- =================================
+         KNOWLEDGE MANAGEMENT MODULES
+    ================================== -->
+    <section
+        class="dashboard-section"
+        aria-labelledby="modules-title"
+    >
+
+        <div class="section-header">
+
+            <div>
+                <h2 id="modules-title">
+                    Knowledge Management
+                </h2>
+
+                <p>
+                    Planned modules for clinical data
+                    management and governance.
+                </p>
+            </div>
+
+            <span class="section-tag">
+                Future Phases
+            </span>
+
+        </div>
+
+        <div class="module-grid">
+
+            {% for module in modules %}
+
+                <article class="module-card">
+
+                    <div class="module-header">
+
+                        <span
+                            class="module-icon"
+                            aria-hidden="true"
+                        >
+                            {% if module.icon == "activity" %}
+                                ◇
+                            {% elif module.icon == "heart" %}
+                                ♡
+                            {% elif module.icon == "package" %}
+                                ▣
+                            {% elif module.icon == "document" %}
+                                ▤
+                            {% elif module.icon == "shield" %}
+                                ⬡
+                            {% else %}
+                                ▥
+                            {% endif %}
+                        </span>
+
+                        <span class="module-status">
+                            Planned
+                        </span>
+
+                    </div>
+
+                    <h3>
+                        {{ module.title }}
+                    </h3>
+
+                    <p>
+                        {{ module.description }}
+                    </p>
+
+                    <div class="module-footer">
+
+                        <span>
+                            {{ module.phase }}
+                        </span>
+
+                        <span class="module-not-available">
+                            Not available yet
+                        </span>
+
+                    </div>
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <!-- =================================
+         NEXT ENGINEERING PHASE
+    ================================== -->
+    <section
+        class="dashboard-section"
+        aria-labelledby="next-phase-title"
+    >
+
+        <div class="next-phase-panel">
+
+            <div>
+
+                <p class="eyebrow">
+                    Next Implementation Milestone
+                </p>
+
+                <h2 id="next-phase-title">
+                    Phase 06 — Admin Identities
+                    & Secure Sessions
+                </h2>
+
+                <p>
+                    Introduce administrator identities,
+                    password hashing, secure session
+                    management, login and logout,
+                    CSRF protection, and login
+                    rate limiting.
+                </p>
+
+            </div>
+
+            <span class="phase-next-badge">
+                Upcoming
+            </span>
+
+        </div>
+
+    </section>
+
+{% endblock %}

@@ -32,3 +32,18 @@ psycopg[binary]>=3.2.0,<4.0.0
 
 # Schema migration and version management
 alembic>=1.14.0,<2.0.0
+
+
+# ============================================
+# PHASE 05 - JINJA ADMIN INTERFACE
+# ============================================
+
+# Server-side HTML template rendering
+Jinja2>=3.1.4,<4.0.0
+
+# Multipart form parsing for future Admin forms
+python-multipart>=0.0.20,<1.0.0
+
+# Starlette is supplied by FastAPI.
+# Use FastAPI's compatible Starlette version.
+

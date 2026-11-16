@@ -1,0 +1,57 @@
+
+{#
+    The Invisible Healer
+    Reusable Flash Feedback
+
+    Expected context:
+        flash = {
+            "type": "success" | "error"
+                    | "warning" | "info",
+            "message": "..."
+        }
+
+    Important:
+        Messages are escaped automatically.
+        Do not mark untrusted content as safe.
+#}
+
+{% if flash %}
+
+    <div
+        class="alert alert-{{ flash.type }}"
+        role="{% if flash.type == 'error' %}alert{% else %}status{% endif %}"
+        data-dismissible-alert
+    >
+
+        <div class="alert-content">
+
+            <span class="alert-indicator" aria-hidden="true">
+                {% if flash.type == 'success' %}
+                    ✓
+                {% elif flash.type == 'error' %}
+                    !
+                {% elif flash.type == 'warning' %}
+                    !
+                {% else %}
+                    i
+                {% endif %}
+            </span>
+
+            <span class="alert-message">
+                {{ flash.message }}
+            </span>
+
+        </div>
+
+        <button
+            type="button"
+            class="alert-close"
+            data-alert-dismiss
+            aria-label="Dismiss notification"
+        >
+            &times;
+        </button>
+
+    </div>
+
+{% endif %}
