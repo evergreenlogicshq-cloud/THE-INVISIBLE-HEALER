@@ -79,6 +79,7 @@ class Settings(BaseSettings):
     SESSION_COOKIE_HTTPONLY: bool = True
     SESSION_COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
     SESSION_MAX_AGE_SECONDS: int = Field(default=3600, ge=300, le=86400)
+    SESSION_IDLE_TIMEOUT_SECONDS: int = Field(default=900, ge=60, le=86400)
     # -----------------------------------------
     # Optional AI provider credentials
     # -----------------------------------------
@@ -302,6 +303,11 @@ class Settings(BaseSettings):
                 and not self.SESSION_COOKIE_SECURE
             ):
                 raise ValueError("SameSite=None requires Secure cookies.")
+
+            if self.SESSION_IDLE_TIMEOUT_SECONDS > self.SESSION_MAX_AGE_SECONDS:
+                raise ValueError(
+                    "Session idle timeout cannot exceed the absolute session lifetime."
+                )
 
             if self.APP_ENV == "production":
                 if not self.SESSION_COOKIE_SECURE:

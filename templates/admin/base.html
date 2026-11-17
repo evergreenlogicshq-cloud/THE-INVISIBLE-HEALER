@@ -1,6 +1,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
 
@@ -15,12 +16,13 @@
     >
 
     <!--
-        CSRF integration placeholder.
+        PHASE 06 - CSRF TOKEN
 
-        This is NOT active CSRF protection.
+        The authenticated dashboard supplies a CSRF token
+        generated from the active Admin session.
 
-        Phase 06 must supply and validate tokens
-        before enabling state-changing forms.
+        Backend routes must validate the submitted token
+        before performing state-changing operations.
     -->
     <meta
         name="admin-csrf-token"
@@ -190,10 +192,14 @@
                     System
                 </p>
 
+                <!--
+                    User and role management will be
+                    implemented in Phase 07.
+                -->
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">⚙</span>
                     <span>User Management</span>
-                    <small>06</small>
+                    <small>07</small>
                 </span>
 
             </nav>
@@ -245,6 +251,7 @@
 
                     <!-- Breadcrumb navigation -->
                     <div class="breadcrumb">
+
                         <span>Administration</span>
 
                         <span aria-hidden="true">/</span>
@@ -252,6 +259,7 @@
                         <strong>
                             {{ page_title | default('Dashboard') }}
                         </strong>
+
                     </div>
 
                 </div>
@@ -263,23 +271,66 @@
                         {{ environment | default('development') }}
                     </span>
 
-                    <!--
-                        Display-only avatar.
+                    <!-- =================================
+                         PHASE 06 - ADMIN IDENTITY
+                    ================================== -->
 
-                        This is not an authenticated user.
-                        Real identity data will be added
-                        in Phase 06.
-                    -->
-                    <span
-                        class="admin-avatar"
-                        aria-hidden="true"
-                    >
-                        IH
-                    </span>
+                    {% if admin_user is defined and admin_user %}
 
-                    <span class="sr-only">
-                        Authentication not yet configured
-                    </span>
+                        <div class="admin-identity">
+
+                            <!-- Administrator avatar -->
+                            <span
+                                class="admin-avatar"
+                                aria-hidden="true"
+                            >
+                                {{ admin_user.full_name[:1] | upper }}
+                            </span>
+
+                            <!-- Administrator information -->
+                            <div class="admin-user-details">
+
+                                <span class="admin-name">
+                                    {{ admin_user.full_name }}
+                                </span>
+
+                                <span class="admin-email">
+                                    {{ admin_user.email }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <!-- =================================
+                             SECURE LOGOUT FORM
+
+                             POST only.
+                             CSRF checked by backend.
+                        ================================== -->
+                        <form
+                            method="post"
+                            action="{{ url_for('admin_logout') }}"
+                            class="admin-logout-form"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="{{ csrf_token | default('', true) | e }}"
+                            >
+
+                            <button
+                                type="submit"
+                                class="admin-logout-button"
+                                aria-label="Sign out of administration"
+                            >
+                                Sign Out
+                            </button>
+
+                        </form>
+
+                    {% endif %}
 
                 </div>
 
@@ -294,26 +345,13 @@
                 tabindex="-1"
             >
 
-                <!--
-                    Reusable flash feedback.
-
-                    Preferred filename:
-                    feedback.html
-                -->
+                <!-- Reusable flash feedback -->
                 {% include "admin/feedback.html" %}
 
-                <!--
-                    Reusable form error summary.
-
-                    Preferred filename:
-                    form_errors.html
-                -->
+                <!-- Reusable form error summary -->
                 {% include "admin/form_errors.html" %}
 
-                <!--
-                    Child templates insert
-                    page-specific content here.
-                -->
+                <!-- Child template content -->
                 {% block content %}{% endblock %}
 
             </main>

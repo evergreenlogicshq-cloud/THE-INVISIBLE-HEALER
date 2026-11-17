@@ -47,3 +47,14 @@ python-multipart>=0.0.20,<1.0.0
 # Starlette is supplied by FastAPI.
 # Use FastAPI's compatible Starlette version.
 
+
+# ============================================
+# PHASE 06 - ADMIN AUTHENTICATION
+# ============================================
+
+# Argon2id password hashing
+pwdlib[argon2]>=0.2.0,<1.0.0
+
+# Signed, time-limited CSRF and session cookies
+itsdangerous>=2.2.0,<3.0.0
+

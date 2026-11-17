@@ -30,14 +30,15 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import Engine
+
 from app.api.router import api_router
 from app.core.config import Settings, get_settings
 from app.core.exceptions import register_exception_handlers
 from app.db.session import create_database_engine, create_session_factory
-
 
 logger = logging.getLogger(__name__)
 

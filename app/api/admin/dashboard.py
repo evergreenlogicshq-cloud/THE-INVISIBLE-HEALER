@@ -20,9 +20,16 @@ Security:
 
 from pathlib import Path
 
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+
+from app.api.dependencies import DatabaseSessionDependency
+from app.services.admin.auth import (
+    SESSION_COOKIE_NAME,
+    resolve_admin_session,
+    session_csrf_token,
+)
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 TEMPLATE_DIR = BASE_DIR / "templates"
@@ -107,22 +114,26 @@ FLASH_MESSAGES = {
 
 
 @router.get(
-    "",
-    response_class=HTMLResponse,
-    summary="Admin dashboard",
-    description="Render the Phase 05 Admin presentation shell",
+    "", response_class=HTMLResponse, summary="Admin dashboard", name="admin_dashboard"
 )
-def admin_dashboard(request: Request) -> HTMLResponse:
+def admin_dashboard(request: Request, db: DatabaseSessionDependency):
     """
-    Render the Admin dashboard.
-
-    This endpoint is intentionally read-only.
-
-    No authentication is implied by this
-    demonstration dashboard. Real Admin
-    resources require Phase 06 security.
+    Phase 06 - Protected Admin dashboard.
+    Never render Admin content without a
+    valid, active, server-side session.
     """
     settings = request.app.state.settings
+
+    if not settings.ADMIN_SESSIONS_ENABLED:
+        raise HTTPException(status_code=503, detail="Admin authentication is disabled.")
+
+    authenticated = resolve_admin_session(
+        db, request.cookies.get(SESSION_COOKIE_NAME), settings
+    )
+
+    if authenticated is None:
+        return RedirectResponse(url="/admin/login", status_code=303)
+
     notice = request.query_params.get("notice")
     flash = FLASH_MESSAGES.get(notice)
 
@@ -135,12 +146,15 @@ def admin_dashboard(request: Request) -> HTMLResponse:
         "modules": DASHBOARD_MODULES,
         "flash": flash,
         "form_errors": (),
-        # Placeholder only.
-        # A verified CSRF implementation must
-        # replace this before POST forms exist.
-        "csrf_token": None,
+        "csrf_token": session_csrf_token(authenticated.session),
+        "admin_user": authenticated.user,
     }
 
-    return templates.TemplateResponse(
-        request=request, name="admin/dashboard.html", context=context
+    response = templates.TemplateResponse(
+        request=request,
+        name="admin/dashboard.html",
+        context=context,
     )
+    response.headers["Cache-Control"] = "no-store, private"
+
+    return response

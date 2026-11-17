@@ -1212,3 +1212,47 @@ a.nav-link:hover {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ============================================
+   PHASE 06 - AUTHENTICATED ADMIN
+============================================ */
+
+.admin-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-name {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.admin-logout-form {
+    margin: 0;
+}
+
+.admin-logout-button {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+}
+
+.admin-logout-button:hover {
+    background: #f1f5f9;
+}
+
+.admin-logout-button:focus-visible {
+    outline: 2px solid #267b83;
+    outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+    .admin-name {
+        display: none;
+    }
+}
