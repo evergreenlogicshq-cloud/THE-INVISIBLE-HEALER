@@ -36,9 +36,7 @@
         {% endblock %}
     </title>
 
-    <!-- ========================================
-         ADMIN STYLESHEET
-    ========================================= -->
+    <!-- ADMIN STYLESHEET -->
     <link
         rel="stylesheet"
         href="{{ url_for('static', path='/css/admin.css') }}"
@@ -49,9 +47,7 @@
 
 <body>
 
-    <!-- ========================================
-         ACCESSIBILITY: SKIP NAVIGATION
-    ========================================= -->
+    <!-- ACCESSIBILITY: SKIP NAVIGATION -->
     <a
         class="skip-link"
         href="#main-content"
@@ -61,18 +57,14 @@
 
     <div class="admin-layout">
 
-        <!-- ====================================
-             MOBILE SIDEBAR OVERLAY
-        ===================================== -->
+        <!-- MOBILE SIDEBAR OVERLAY -->
         <div
             class="sidebar-overlay"
             data-sidebar-overlay
             aria-hidden="true"
         ></div>
 
-        <!-- ====================================
-             SIDEBAR
-        ===================================== -->
+        <!-- SIDEBAR -->
         <aside
             class="sidebar"
             id="admin-sidebar"
@@ -111,9 +103,7 @@
 
             </div>
 
-            <!-- =================================
-                 PRIMARY NAVIGATION
-            ================================== -->
+            <!-- PRIMARY NAVIGATION -->
             <nav
                 class="sidebar-nav"
                 aria-label="Primary navigation"
@@ -134,6 +124,7 @@
                     <span aria-hidden="true">▦</span>
                     <span>Dashboard</span>
                 </a>
+
 
                 <!-- CLINICAL KNOWLEDGE -->
                 <p class="nav-heading">
@@ -169,11 +160,7 @@
                     <span>Relationships</span>
                     <small>12</small>
                 </span>
-                <span class="nav-link nav-disabled">
-                    <span aria-hidden="true">⚙</span>
-                    <span>User Management</span>
-                    <small>07</small>
-                </span>
+
 
                 <!-- EVIDENCE AND SAFETY -->
                 <p class="nav-heading">
@@ -192,26 +179,38 @@
                     <small>21</small>
                 </span>
 
+
                 <!-- SYSTEM -->
                 <p class="nav-heading">
                     System
                 </p>
 
                 <!--
-                    User and role management will be
-                    implemented in Phase 07.
+                    PHASE 07 - DOCTOR ADMINISTRATION
+
+                    Single administrator type:
+                    Doctor Admin with full admin access.
+
+                    Uses backend authentication and
+                    DoctorAdminDependency.
+
+                    No role management is required.
                 -->
-                <span class="nav-link nav-disabled">
+                <a
+                    href="{{ url_for('admin_users') }}"
+                    class="nav-link {% if active_page == 'users' %}active{% endif %}"
+                    {% if active_page == 'users' %}
+                        aria-current="page"
+                    {% endif %}
+                >
                     <span aria-hidden="true">⚙</span>
-                    <span>User Management</span>
-                    <small>07</small>
-                </span>
+                    <span>Doctor Administrators</span>
+                </a>
 
             </nav>
 
-            <!-- =================================
-                 SIDEBAR FOOTER
-            ================================== -->
+
+            <!-- SIDEBAR FOOTER -->
             <div class="sidebar-footer">
 
                 <div class="sidebar-version">
@@ -230,14 +229,11 @@
 
         </aside>
 
-        <!-- ====================================
-             MAIN APPLICATION AREA
-        ===================================== -->
+
+        <!-- MAIN APPLICATION AREA -->
         <div class="main-area">
 
-            <!-- =================================
-                 TOP HEADER
-            ================================== -->
+            <!-- TOP HEADER -->
             <header class="topbar">
 
                 <div class="topbar-left">
@@ -269,6 +265,7 @@
 
                 </div>
 
+
                 <div class="topbar-right">
 
                     <!-- Current environment -->
@@ -276,9 +273,17 @@
                         {{ environment | default('development') }}
                     </span>
 
-                    <!-- =================================
-                         PHASE 06 - ADMIN IDENTITY
-                    ================================== -->
+
+                    <!--
+                        PHASE 06 - ADMIN IDENTITY
+                        PHASE 07 - DOCTOR ADMIN TYPE
+
+                        Every authenticated administrator
+                        is a Doctor Admin.
+
+                        No separate roles or permissions
+                        are used.
+                    -->
 
                     {% if admin_user is defined and admin_user %}
 
@@ -303,16 +308,23 @@
                                     {{ admin_user.email }}
                                 </span>
 
+                                <!-- Phase 07 Doctor Admin label -->
+                                <span class="doctor-profile-label">
+                                    Doctor Admin
+                                </span>
+
                             </div>
 
                         </div>
 
-                        <!-- =================================
-                             SECURE LOGOUT FORM
 
-                             POST only.
-                             CSRF checked by backend.
-                        ================================== -->
+                        <!--
+                            SECURE LOGOUT FORM
+
+                            POST only.
+                            CSRF checked by backend.
+                            Phase 06 authentication preserved.
+                        -->
                         <form
                             method="post"
                             action="{{ url_for('admin_logout') }}"
@@ -341,9 +353,8 @@
 
             </header>
 
-            <!-- =================================
-                 MAIN PAGE CONTENT
-            ================================== -->
+
+            <!-- MAIN PAGE CONTENT -->
             <main
                 id="main-content"
                 class="main-content"
@@ -361,9 +372,8 @@
 
             </main>
 
-            <!-- =================================
-                 APPLICATION FOOTER
-            ================================== -->
+
+            <!-- APPLICATION FOOTER -->
             <footer class="main-footer">
 
                 <span>
@@ -380,9 +390,8 @@
 
     </div>
 
-    <!-- ========================================
-         ADMIN JAVASCRIPT
-    ========================================= -->
+
+    <!-- ADMIN JAVASCRIPT -->
     <script
         src="{{ url_for('static', path='/js/admin.js') }}"
         defer
