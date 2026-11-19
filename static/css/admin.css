@@ -1256,3 +1256,212 @@ a.nav-link:hover {
         display: none;
     }
 }
+
+
+/* ==========================================
+   PHASE 07 - DOCTOR ADMINISTRATION
+   ========================================== */
+
+.doctor-profile-label {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #247455;
+}
+
+/* Access overview */
+
+.doctor-access-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin-bottom: 24px;
+    padding: 24px;
+
+    background: #f3f8f5;
+    border: 1px solid #dcebe2;
+    border-radius: 12px;
+}
+
+.doctor-access-summary h2 {
+    margin: 0 0 8px;
+    font-size: 1.15rem;
+    color: #1c4735;
+}
+
+.doctor-access-summary p {
+    margin: 0;
+    max-width: 650px;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: #53675d;
+}
+
+.doctor-access-label {
+    padding: 9px 14px;
+    border-radius: 8px;
+
+    background: #dff1e6;
+    color: #216746;
+
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Administrator directory */
+
+.doctor-users-panel {
+    margin-bottom: 24px;
+    background: #ffffff;
+    border: 1px solid #e5e9ed;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.doctor-users-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 24px;
+    border-bottom: 1px solid #e5e9ed;
+}
+
+.doctor-users-header h2 {
+    margin: 0 0 6px;
+    font-size: 1.1rem;
+    color: #25352d;
+}
+
+.doctor-users-header p {
+    margin: 0;
+    color: #6b7770;
+    font-size: 0.85rem;
+}
+
+.doctor-users-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.doctor-users-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.doctor-users-table th,
+.doctor-users-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eef0f2;
+    font-size: 0.87rem;
+    vertical-align: middle;
+}
+
+.doctor-users-table th {
+    background: #f8faf9;
+    color: #57635c;
+    font-weight: 600;
+}
+
+.doctor-users-table td {
+    color: #34423a;
+}
+
+.doctor-users-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.doctor-users-table tbody tr:hover {
+    background: #fafcfb;
+}
+
+.doctor-you-label {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 0.7rem;
+    color: #247455;
+}
+
+/* Account status */
+
+.doctor-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.doctor-status.active {
+    background: #e4f5eb;
+    color: #237247;
+}
+
+.doctor-status.inactive {
+    background: #f3e8e8;
+    color: #9a4141;
+}
+
+/* Permissions information */
+
+.doctor-access-info {
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #e5e9ed;
+    border-radius: 12px;
+}
+
+.doctor-access-info h2 {
+    margin: 0 0 12px;
+    color: #25352d;
+    font-size: 1.1rem;
+}
+
+.doctor-access-info p {
+    color: #66736b;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.doctor-access-info ul {
+    margin: 18px 0;
+    padding-left: 22px;
+}
+
+.doctor-access-info li {
+    margin-bottom: 10px;
+    color: #415349;
+    font-size: 0.87rem;
+    line-height: 1.6;
+}
+
+.doctor-access-note {
+    margin-top: 16px;
+    font-style: italic;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .doctor-access-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 18px;
+    }
+
+    .doctor-users-header {
+        padding: 18px;
+    }
+
+    .doctor-users-table {
+        min-width: 680px;
+    }
+
+    .doctor-access-info {
+        padding: 18px;
+    }
+}

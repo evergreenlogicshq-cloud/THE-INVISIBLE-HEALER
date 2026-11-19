@@ -1,0 +1,200 @@
+
+{% extends "admin/base.html" %}
+
+{% block title %}
+    Doctor Administrators | {{ app_name }}
+{% endblock %}
+
+{% block content %}
+
+<section
+    class="page-heading"
+    aria-labelledby="doctor-users-title"
+>
+    <div>
+        <p class="eyebrow">
+            Administration / Access Management
+        </p>
+
+        <h1 id="doctor-users-title">
+            Doctor Administrators
+        </h1>
+
+        <p class="page-description">
+            Manage access to the clinical
+            administration workspace.
+
+            Every administrator account uses
+            the same Doctor Admin access model.
+        </p>
+    </div>
+
+    <span class="phase-badge">
+        Phase 07
+    </span>
+</section>
+
+
+<section
+    class="doctor-access-summary"
+    aria-label="Access model"
+>
+    <div>
+        <h2>Single Doctor Admin Access</h2>
+
+        <p>
+            All active Doctor Admin accounts have
+            full administrative permissions.
+
+            Separate roles and permission assignments
+            are not required.
+        </p>
+    </div>
+
+    <span class="doctor-access-label">
+        Doctor Admin
+    </span>
+</section>
+
+
+<section
+    class="doctor-users-panel"
+    aria-labelledby="doctor-users-heading"
+>
+    <div class="doctor-users-header">
+        <div>
+            <h2 id="doctor-users-heading">
+                Administrator Accounts
+            </h2>
+
+            <p>
+                {{ users | length }}
+                registered administrator account(s)
+            </p>
+        </div>
+    </div>
+
+    <div class="doctor-users-table-wrap">
+        <table class="doctor-users-table">
+
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Admin Type</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Created</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for user in users %}
+
+                <tr>
+                    <td>
+                        <strong>
+                            {{ user.full_name }}
+                        </strong>
+
+                        {% if user.id == admin_user.id %}
+                            <span class="doctor-you-label">
+                                You
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ user.email }}
+                    </td>
+
+                    <td>
+                        Doctor Admin
+                    </td>
+
+                    <td>
+                        {% if user.is_active %}
+                            <span class="doctor-status active">
+                                Active
+                            </span>
+                        {% else %}
+                            <span class="doctor-status inactive">
+                                Inactive
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ user.created_at.strftime(
+                            "%d %b %Y"
+                        ) }}
+                    </td>
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td colspan="5">
+                        No administrator accounts found.
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</section>
+
+
+<section
+    class="doctor-access-info"
+    aria-labelledby="doctor-access-info-title"
+>
+    <h2 id="doctor-access-info-title">
+        Administrator Permissions
+    </h2>
+
+    <p>
+        Every authenticated and active Doctor Admin
+        is authorized to perform administrative
+        functions implemented in the system.
+    </p>
+
+    <ul>
+        <li>
+            Manage medical concepts, conditions
+            and symptoms
+        </li>
+
+        <li>
+            Manage products, remedies, ingredients
+            and clinical relationships
+        </li>
+
+        <li>
+            Review and publish clinical knowledge
+            and source documents
+        </li>
+
+        <li>
+            Manage clinical protocols and safety data
+        </li>
+
+        <li>
+            Manage training and evaluation datasets
+        </li>
+
+        <li>
+            Access authorized system operations
+            and audit records
+        </li>
+    </ul>
+
+    <p class="doctor-access-note">
+        These features will become available as
+        their respective development phases
+        are implemented and validated.
+    </p>
+</section>
+
+{% endblock %}
