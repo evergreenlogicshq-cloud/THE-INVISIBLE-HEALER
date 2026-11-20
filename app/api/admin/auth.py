@@ -21,6 +21,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.api.admin.dashboard import templates
 from app.api.dependencies import DatabaseSessionDependency
+from app.services.admin.audit import record_audit_event
 from app.services.admin.auth import (
     LOGIN_CSRF_COOKIE_NAME,
     SESSION_COOKIE_NAME,
@@ -150,6 +151,17 @@ def login(
     if user is None:
         record_failed_attempt(db, rate_key, now)
 
+        # No known authenticated actor.
+        # Do not record the supplied email/password.
+        record_audit_event(
+            db,
+            actor_type="system",
+            action="admin.login_failed",
+            resource_type="admin_authentication",
+            decision="denied",
+            trace_id=request.state.trace_id,
+        )
+
         # Generic error: don't identify which
         # part of the credentials was incorrect.
         return render_login(
@@ -158,7 +170,26 @@ def login(
             status_code=401,
         )
 
-    created = create_admin_session(db, user, settings)
+    created = create_admin_session(
+        db,
+        user,
+        settings,
+    )
+
+    # Phase 08 - Login audit event.
+    # Both the session and audit event must
+    # be committed successfully together.
+    record_audit_event(
+        db,
+        actor_id=user.id,
+        actor_type="doctor_admin",
+        action="admin.login",
+        resource_type="admin_session",
+        resource_id=created.record.id,
+        decision="allowed",
+        trace_id=request.state.trace_id,
+    )
+
     # Commit authentication state before emitting
     # a session cookie to the browser.
     db.commit()
@@ -207,6 +238,18 @@ def logout(
         raise HTTPException(status_code=403, detail="Invalid CSRF token.")
 
     revoke_session(db, authenticated.session)
+
+    record_audit_event(
+        db,
+        actor_id=authenticated.user.id,
+        actor_type="doctor_admin",
+        action="admin.logout",
+        resource_type="admin_session",
+        resource_id=authenticated.session.id,
+        decision="allowed",
+        trace_id=request.state.trace_id,
+    )
+
     db.commit()
     response = RedirectResponse("/admin/login", status_code=status.HTTP_303_SEE_OTHER)
     response.delete_cookie(SESSION_COOKIE_NAME, path="/admin")

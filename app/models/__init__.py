@@ -10,9 +10,11 @@ from app.models.admin.admin_user import (
     AdminSession,
     AdminUser,
 )
+from app.models.admin.audit import AuditEvent
 
 __all__ = [
     "AdminLoginAttempt",
     "AdminSession",
     "AdminUser",
+    "AuditEvent",
 ]

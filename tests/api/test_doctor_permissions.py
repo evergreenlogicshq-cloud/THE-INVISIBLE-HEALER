@@ -112,6 +112,7 @@ def test_no_roles_or_permissions_tables():
         "admin_users",
         "admin_sessions",
         "admin_login_attempts",
+        "audit_events",
     }
 
 

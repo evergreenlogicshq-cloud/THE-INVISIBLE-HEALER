@@ -8,6 +8,7 @@ Run from the project root:
 Never pass passwords as command-line arguments.
 """
 
+import uuid
 from getpass import getpass
 
 from sqlalchemy.exc import IntegrityError
@@ -17,6 +18,7 @@ from app.db.session import (
     create_database_engine,
     create_session_factory,
 )
+from app.services.admin.audit import record_audit_event
 from app.services.admin.auth import create_admin_user
 
 
@@ -47,6 +49,21 @@ def main() -> None:
                     email=email,
                     full_name=full_name,
                     password=password,
+                )
+
+                # Provisioning is performed by a
+                # trusted command-line operator.
+                # No authenticated web Doctor Admin
+                # identity exists in this context.
+                record_audit_event(
+                    db,
+                    actor_type="system",
+                    action="admin.create",
+                    resource_type="admin_user",
+                    resource_id=user.id,
+                    resource_version="1",
+                    decision="allowed",
+                    trace_id=uuid.uuid4(),
                 )
 
                 db.commit()

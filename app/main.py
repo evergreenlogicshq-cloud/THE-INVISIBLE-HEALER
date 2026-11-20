@@ -27,6 +27,7 @@ Important:
 """
 
 import logging
+import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -145,6 +146,27 @@ def create_app(
     )
 
     application.state.settings = application_settings
+
+    # ========================================
+    # PHASE 08 - REQUEST TRACE IDs
+    # ========================================
+
+    @application.middleware("http")
+    async def attach_trace_id(request, call_next):
+        """
+        Generate an internal trace ID.
+
+        Do not accept client-supplied trace IDs as
+        authoritative identifiers.
+        """
+        trace_id = str(uuid.uuid4())
+        request.state.trace_id = trace_id
+
+        response = await call_next(request)
+        response.headers["X-Trace-ID"] = trace_id
+
+        return response
+
     # ========================================
     # PHASE 05 - STATIC FILES
     # ========================================

@@ -207,6 +207,18 @@
                     <span>Doctor Administrators</span>
                 </a>
 
+                <!-- PHASE 08 - AUDIT TRAIL -->
+                <a
+                    href="{{ url_for('admin_audit') }}"
+                    class="nav-link {% if active_page == 'audit' %}active{% endif %}"
+                    {% if active_page == 'audit' %}
+                        aria-current="page"
+                    {% endif %}
+                >
+                    <span aria-hidden="true">▤</span>
+                    <span>Audit Trail</span>
+                </a>
+
             </nav>
 
 

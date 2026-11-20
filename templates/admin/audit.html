@@ -1,0 +1,159 @@
+
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<section class="page-header">
+    <div>
+        <h1>Audit Trail</h1>
+        <p>
+            Read-only administrative and security
+            event history.
+        </p>
+    </div>
+</section>
+
+<section class="admin-card">
+
+    <div style="padding: 20px;">
+
+        <h2>Recorded Events</h2>
+
+        <p>
+            Audit records are append-only.
+            This page does not permit editing
+            or deleting events.
+        </p>
+
+        <form
+            action="{{ url_for('admin_audit') }}"
+            method="get"
+            style="margin: 20px 0;"
+        >
+            <label for="audit-action">
+                Filter by action
+            </label>
+
+            <input
+                id="audit-action"
+                name="action"
+                type="text"
+                maxlength="100"
+                value="{{ selected_action }}"
+                placeholder="e.g. admin.login"
+            >
+
+            <button type="submit">
+                Filter
+            </button>
+
+            <a href="{{ url_for('admin_audit') }}">
+                Clear
+            </a>
+        </form>
+
+        <div style="overflow-x: auto;">
+
+            <table
+                class="admin-table"
+                style="width: 100%; border-collapse: collapse;"
+            >
+                <thead>
+                    <tr>
+                        <th scope="col">Timestamp</th>
+                        <th scope="col">Actor</th>
+                        <th scope="col">Action</th>
+                        <th scope="col">Resource</th>
+                        <th scope="col">Version</th>
+                        <th scope="col">Decision</th>
+                        <th scope="col">Trace ID</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for event in events %}
+
+                    <tr>
+                        <td>
+                            {{ event.occurred_at.strftime(
+                                '%Y-%m-%d %H:%M:%S'
+                            ) }} UTC
+                        </td>
+
+                        <td>
+                            <strong>{{ event.actor_type }}</strong>
+
+                            {% if event.actor_id %}
+                            <small>
+                                {{ event.actor_id }}
+                            </small>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <code>{{ event.action }}</code>
+                        </td>
+
+                        <td>
+                            {{ event.resource_type }}
+
+                            {% if event.resource_id %}
+                            <small>
+                                {{ event.resource_id }}
+                            </small>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ event.resource_version or "—" }}
+                        </td>
+
+                        <td>
+                            {{ event.decision }}
+                        </td>
+
+                        <td>
+                            <code>{{ event.trace_id }}</code>
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="7">
+                            No audit events found.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <nav
+            aria-label="Audit pagination"
+            style="display: flex; gap: 16px; margin-top: 24px;"
+        >
+            {% if has_previous %}
+                <a
+                    href="{{ url_for('admin_audit') }}?page={{ page - 1 }}&action={{ selected_action | urlencode }}"
+                >
+                    Previous
+                </a>
+            {% endif %}
+
+            <span>Page {{ page }}</span>
+
+            {% if has_next %}
+                <a
+                    href="{{ url_for('admin_audit') }}?page={{ page + 1 }}&action={{ selected_action | urlencode }}"
+                >
+                    Next
+                </a>
+            {% endif %}
+        </nav>
+
+    </div>
+</section>
+
+{% endblock %}
