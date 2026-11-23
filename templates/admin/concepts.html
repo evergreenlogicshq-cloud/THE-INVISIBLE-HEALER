@@ -1,0 +1,396 @@
+
+{% extends "admin/base.html" %}
+
+{% block title %}
+Medical Concepts | {{ app_name }}
+{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Clinical Knowledge</p>
+        <h1>Medical Concepts</h1>
+        <p class="page-description">
+            Maintain medical terminology, canonical labels,
+            synonyms, and concept lifecycle status.
+        </p>
+    </div>
+
+    <span class="phase-badge">Phase 09</span>
+</section>
+
+{% if notice %}
+<section class="concept-notice" role="status">
+    {{ notice }}
+</section>
+{% endif %}
+
+<section class="dashboard-section concept-panel">
+    <div class="section-header">
+        <div>
+            <h2>Create Medical Concept</h2>
+            <p>
+                Register a stable medical terminology identity.
+                New records do not automatically become
+                patient-facing clinical knowledge.
+            </p>
+        </div>
+    </div>
+
+    <form
+        method="post"
+        action="{{ url_for('admin_create_concept') }}"
+        class="concept-form"
+    >
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token }}"
+        >
+
+        <div class="concept-form-grid">
+            <div>
+                <label for="concept-kind">Concept kind</label>
+                <select
+                    id="concept-kind"
+                    name="kind"
+                    required
+                >
+                    <option value="health_issue">Health Issue</option>
+                    <option value="symptom">Symptom</option>
+                    <option value="medication">Medication</option>
+                    <option value="product">Product</option>
+                    <option value="remedy">Remedy</option>
+                    <option value="ingredient">Ingredient</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="concept-namespace">
+                    Terminology namespace
+                </label>
+                <input
+                    id="concept-namespace"
+                    name="namespace"
+                    value="local"
+                    maxlength="60"
+                    required
+                >
+            </div>
+
+            <div>
+                <label for="canonical-name">
+                    Canonical name
+                </label>
+                <input
+                    id="canonical-name"
+                    name="canonical_name"
+                    maxlength="200"
+                    required
+                    placeholder="e.g. Headache"
+                >
+            </div>
+
+            <div>
+                <label for="ontology-code">
+                    Ontology code (optional)
+                </label>
+                <input
+                    id="ontology-code"
+                    name="ontology_code"
+                    maxlength="100"
+                    placeholder="External terminology code"
+                >
+            </div>
+
+            <div>
+                <label for="concept-status">
+                    Status
+                </label>
+                <select
+                    id="concept-status"
+                    name="concept_status"
+                >
+                    <option value="draft">Draft</option>
+                    <option value="approved">Approved</option>
+                </select>
+            </div>
+
+            <div class="concept-wide">
+                <label for="concept-aliases">
+                    Aliases / Synonyms
+                </label>
+                <textarea
+                    id="concept-aliases"
+                    name="aliases"
+                    rows="3"
+                    placeholder="One alias per line"
+                ></textarea>
+                <small>
+                    Enter one alternate name per line.
+                    Do not repeat the canonical name.
+                </small>
+            </div>
+        </div>
+
+        <button type="submit" class="concept-button">
+            Save Medical Concept
+        </button>
+    </form>
+</section>
+
+<section class="dashboard-section concept-panel">
+    <div class="section-header">
+        <div>
+            <h2>Concept Registry</h2>
+            <p>
+                {{ total }} registered concept(s).
+            </p>
+        </div>
+    </div>
+
+    <form
+        method="get"
+        action="{{ url_for('admin_concepts') }}"
+        class="concept-filters"
+        role="search"
+    >
+        <input
+            type="search"
+            name="q"
+            value="{{ q }}"
+            maxlength="200"
+            placeholder="Search names or aliases"
+            aria-label="Search medical concepts"
+        >
+
+        <select name="kind" aria-label="Filter by kind">
+            <option value="">All kinds</option>
+            {% for value, label in [
+                ('health_issue', 'Health Issue'),
+                ('symptom', 'Symptom'),
+                ('medication', 'Medication'),
+                ('product', 'Product'),
+                ('remedy', 'Remedy'),
+                ('ingredient', 'Ingredient')
+            ] %}
+            <option
+                value="{{ value }}"
+                {% if selected_kind == value %}selected{% endif %}
+            >
+                {{ label }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="status" aria-label="Filter by status">
+            <option value="">All statuses</option>
+            {% for value in ['draft', 'approved', 'retired'] %}
+            <option
+                value="{{ value }}"
+                {% if selected_status == value %}selected{% endif %}
+            >
+                {{ value | capitalize }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="concept-button">
+            Search
+        </button>
+    </form>
+
+    {% if concepts %}
+    <div class="concept-table-wrap">
+        <table class="concept-table">
+            <thead>
+                <tr>
+                    <th>Canonical Name</th>
+                    <th>Kind</th>
+                    <th>Namespace</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for concept in concepts %}
+                <tr>
+                    <td>
+                        <strong>{{ concept.canonical_name }}</strong>
+                        {% if concept.ontology_code %}
+                        <small>
+                            Code: {{ concept.ontology_code }}
+                        </small>
+                        {% endif %}
+                    </td>
+                    <td>{{ concept.kind | replace('_', ' ') | title }}</td>
+                    <td>{{ concept.namespace }}</td>
+                    <td>
+                        <span class="concept-status concept-{{ concept.status }}">
+                            {{ concept.status | capitalize }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="#edit-{{ concept.id }}">
+                            Details / Edit
+                        </a>
+                    </td>
+                </tr>
+
+                <tr id="edit-{{ concept.id }}">
+                    <td colspan="5">
+                        <details class="concept-details">
+                            <summary>
+                                Manage {{ concept.canonical_name }}
+                            </summary>
+
+                            {% if concept.status != 'retired' %}
+                            <form
+                                method="post"
+                                action="{{ url_for(
+                                    'admin_update_concept',
+                                    concept_id=concept.id
+                                ) }}"
+                                class="concept-form"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    value="{{ csrf_token }}"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="kind"
+                                    value="{{ concept.kind }}"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="namespace"
+                                    value="{{ concept.namespace }}"
+                                >
+
+                                <div class="concept-form-grid">
+                                    <div>
+                                        <label>Canonical name</label>
+                                        <input
+                                            name="canonical_name"
+                                            value="{{ concept.canonical_name }}"
+                                            maxlength="200"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label>Ontology code</label>
+                                        <input
+                                            name="ontology_code"
+                                            value="{{ concept.ontology_code or '' }}"
+                                            maxlength="100"
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label>Status</label>
+                                        <select name="concept_status">
+                                            <option
+                                                value="draft"
+                                                {% if concept.status == 'draft' %}
+                                                selected
+                                                {% endif %}
+                                            >
+                                                Draft
+                                            </option>
+                                            <option
+                                                value="approved"
+                                                {% if concept.status == 'approved' %}
+                                                selected
+                                                {% endif %}
+                                            >
+                                                Approved
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="concept-wide">
+                                        <label>
+                                            Aliases (one per line)
+                                        </label>
+                                        <textarea
+                                            name="aliases"
+                                            rows="3"
+                                        >{% for alias in concept.aliases if not alias.is_primary %}{{ alias.alias }}
+{% endfor %}</textarea>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    class="concept-button"
+                                >
+                                    Save Changes
+                                </button>
+                            </form>
+
+                            <form
+                                method="post"
+                                action="{{ url_for(
+                                    'admin_retire_concept',
+                                    concept_id=concept.id
+                                ) }}"
+                                class="concept-retire-form"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    value="{{ csrf_token }}"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="concept-retire-button"
+                                >
+                                    Retire Concept
+                                </button>
+                            </form>
+                            {% else %}
+                            <p>
+                                This concept is retired and
+                                cannot be modified.
+                            </p>
+                            {% endif %}
+                        </details>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <nav class="concept-pagination" aria-label="Pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('admin_concepts') }}?page={{ page - 1 }}&q={{ q | urlencode }}&kind={{ selected_kind }}&status={{ selected_status }}">
+            Previous
+        </a>
+        {% endif %}
+
+        <span>Page {{ page }} of {{ pages }}</span>
+
+        {% if page < pages %}
+        <a href="{{ url_for('admin_concepts') }}?page={{ page + 1 }}&q={{ q | urlencode }}&kind={{ selected_kind }}&status={{ selected_status }}">
+            Next
+        </a>
+        {% endif %}
+    </nav>
+
+    {% else %}
+    <p class="concept-empty">
+        No medical concepts match your search.
+    </p>
+    {% endif %}
+</section>
+
+{% endblock %}

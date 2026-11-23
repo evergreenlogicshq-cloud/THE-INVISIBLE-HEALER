@@ -10,13 +10,7 @@ Authentication is database-backed.
 Registration is intentionally not public.
 """
 
-from fastapi import (
-    APIRouter,
-    Form,
-    HTTPException,
-    Request,
-    status,
-)
+from fastapi import APIRouter, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.api.admin.dashboard import templates
@@ -99,9 +93,7 @@ def render_login(
 def login_page(request: Request, db: DatabaseSessionDependency):
     settings = require_feature(request)
     existing = resolve_admin_session(
-        db,
-        request.cookies.get(SESSION_COOKIE_NAME),
-        settings,
+        db, request.cookies.get(SESSION_COOKIE_NAME), settings
     )
 
     if existing is not None:
@@ -131,11 +123,7 @@ def login(
             status_code=403,
         )
 
-    # Starlette's request.client is supplied by the
-    # ASGI server. Use trusted proxy configuration
-    # at the deployment boundary.
     client_ip = request.client.host if request.client is not None else "unknown"
-
     rate_key = client_rate_key(client_ip, settings)
     now = utc_now()
 
@@ -151,8 +139,6 @@ def login(
     if user is None:
         record_failed_attempt(db, rate_key, now)
 
-        # No known authenticated actor.
-        # Do not record the supplied email/password.
         record_audit_event(
             db,
             actor_type="system",
@@ -162,23 +148,14 @@ def login(
             trace_id=request.state.trace_id,
         )
 
-        # Generic error: don't identify which
-        # part of the credentials was incorrect.
         return render_login(
             request,
             error="Invalid email or password.",
             status_code=401,
         )
 
-    created = create_admin_session(
-        db,
-        user,
-        settings,
-    )
+    created = create_admin_session(db, user, settings)
 
-    # Phase 08 - Login audit event.
-    # Both the session and audit event must
-    # be committed successfully together.
     record_audit_event(
         db,
         actor_id=user.id,
@@ -190,8 +167,6 @@ def login(
         trace_id=request.state.trace_id,
     )
 
-    # Commit authentication state before emitting
-    # a session cookie to the browser.
     db.commit()
 
     response = RedirectResponse(
@@ -202,12 +177,12 @@ def login(
         key=SESSION_COOKIE_NAME,
         value=created.cookie_value,
         max_age=settings.SESSION_MAX_AGE_SECONDS,
-        path="/admin",
+        path="/",
         httponly=True,
         secure=settings.SESSION_COOKIE_SECURE,
         samesite=settings.SESSION_COOKIE_SAMESITE,
     )
-
+    response.delete_cookie(SESSION_COOKIE_NAME, path="/admin")
     response.delete_cookie(LOGIN_CSRF_COOKIE_NAME, path="/admin")
     response.headers["Cache-Control"] = "no-store"
 
@@ -216,29 +191,20 @@ def login(
 
 @router.post("/logout", name="admin_logout")
 def logout(
-    request: Request,
-    db: DatabaseSessionDependency,
-    csrf_token: str = Form(...),
+    request: Request, db: DatabaseSessionDependency, csrf_token: str = Form(...)
 ):
     settings = require_feature(request)
-
     authenticated = resolve_admin_session(
-        db,
-        request.cookies.get(SESSION_COOKIE_NAME),
-        settings,
+        db, request.cookies.get(SESSION_COOKIE_NAME), settings
     )
 
     if authenticated is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Authentication required.",
-        )
+        raise HTTPException(status_code=401, detail="Authentication required.")
 
     if not verify_session_csrf(authenticated.session, csrf_token):
         raise HTTPException(status_code=403, detail="Invalid CSRF token.")
 
     revoke_session(db, authenticated.session)
-
     record_audit_event(
         db,
         actor_id=authenticated.user.id,
@@ -251,9 +217,10 @@ def logout(
     )
 
     db.commit()
-    response = RedirectResponse("/admin/login", status_code=status.HTTP_303_SEE_OTHER)
-    response.delete_cookie(SESSION_COOKIE_NAME, path="/admin")
 
+    response = RedirectResponse("/admin/login", status_code=status.HTTP_303_SEE_OTHER)
+    response.delete_cookie(SESSION_COOKIE_NAME, path="/")
+    response.delete_cookie(SESSION_COOKIE_NAME, path="/admin")
     response.headers["Cache-Control"] = "no-store"
 
     return response

@@ -128,7 +128,7 @@ def test_admin_auth_revision_exists(migration_config: Config) -> None:
 
 def test_migration_history_has_single_head(migration_config: Config) -> None:
     script = ScriptDirectory.from_config(migration_config)
-    assert script.get_heads() == ["0003"]
+    assert script.get_heads() == ["0004"]
 
 
 # ============================================
@@ -145,6 +145,8 @@ def test_metadata_contains_auth_tables() -> None:
     assert Base.metadata is not None
     assert set(Base.metadata.tables) == AUTH_TABLES | {
         "audit_events",
+        "medical_concepts",
+        "concept_aliases",
     }
 
 
@@ -193,13 +195,13 @@ def test_phase06_upgrade(
     Upgrade through all migrations to 0002.
     """
 
-    command.upgrade(migration_config, "head")
+    command.upgrade(migration_config, "0002")
     engine = create_engine(isolated_migration_database)
 
     try:
         inspector = inspect(engine)
         table_names = set(inspector.get_table_names())
-        expected_tables = AUTH_TABLES | {"audit_events", "alembic_version"}
+        expected_tables = AUTH_TABLES | {"alembic_version"}
         assert table_names == expected_tables
 
         with engine.connect() as connection:
@@ -207,7 +209,7 @@ def test_phase06_upgrade(
                 text("SELECT version_num FROM alembic_version")
             ).scalar_one()
 
-        assert version == "0003"
+        assert version == "0002"
 
     finally:
         engine.dispose()

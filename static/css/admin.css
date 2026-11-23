@@ -1465,3 +1465,251 @@ a.nav-link:hover {
         padding: 18px;
     }
 }
+
+/* =========================================
+   PHASE 09 - MEDICAL CONCEPT TAXONOMY
+========================================= */
+
+.concept-panel {
+    margin-bottom: 24px;
+}
+
+.concept-panel .section-header {
+    margin-bottom: 20px;
+}
+
+.concept-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.concept-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.concept-form-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.concept-form label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.concept-form input,
+.concept-form select,
+.concept-form textarea,
+.concept-filters input,
+.concept-filters select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    font: inherit;
+    font-size: 14px;
+    color: #0f172a;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+.concept-form textarea {
+    resize: vertical;
+    min-height: 90px;
+}
+
+.concept-form input:focus-visible,
+.concept-form select:focus-visible,
+.concept-form textarea:focus-visible,
+.concept-filters input:focus-visible,
+.concept-filters select:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.concept-form small {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.concept-wide {
+    grid-column: 1 / -1;
+}
+
+.concept-button {
+    align-self: flex-start;
+    background: #14532d;
+    border: 1px solid #14532d;
+    border-radius: 8px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 18px;
+}
+
+.concept-button:hover {
+    background: #166534;
+}
+
+.concept-filters {
+    display: grid;
+    grid-template-columns: minmax(160px, 2fr) 1fr 1fr auto;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.concept-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.concept-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.concept-table th {
+    background: #f8fafc;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    padding: 14px 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.concept-table td {
+    padding: 14px 12px;
+    vertical-align: top;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.concept-table td small {
+    display: block;
+    margin-top: 5px;
+    color: #64748b;
+}
+
+.concept-table a {
+    color: #166534;
+    text-decoration: underline;
+}
+
+.concept-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.concept-draft {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.concept-approved {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.concept-retired {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.concept-details {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.concept-details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #334155;
+}
+
+.concept-details[open] summary {
+    margin-bottom: 18px;
+}
+
+.concept-retire-form {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.concept-retire-button {
+    padding: 9px 14px;
+    color: #991b1b;
+    background: #fff;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.concept-retire-button:hover {
+    background: #fef2f2;
+}
+
+.concept-notice {
+    margin-bottom: 18px;
+    padding: 13px 16px;
+    border-radius: 8px;
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.concept-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.concept-pagination a {
+    color: #166534;
+    font-weight: 600;
+}
+
+.concept-empty {
+    padding: 25px;
+    text-align: center;
+    color: #64748b;
+}
+
+@media (max-width: 900px) {
+    .concept-filters {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .concept-form-grid,
+    .concept-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .concept-wide {
+        grid-column: auto;
+    }
+
+    .concept-button {
+        width: 100%;
+    }
+}

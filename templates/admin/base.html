@@ -125,60 +125,79 @@
                     <span>Dashboard</span>
                 </a>
 
-
                 <!-- CLINICAL KNOWLEDGE -->
                 <p class="nav-heading">
                     Clinical Knowledge
                 </p>
 
-                <span class="nav-link nav-disabled">
+                <!--
+                    PHASE 09 - MEDICAL CONCEPT TAXONOMY
+
+                    Medical Concepts management is now active.
+
+                    Supports canonical medical names, aliases,
+                    taxonomy types, search and soft retirement.
+
+                    Authentication and permissions are enforced
+                    by the backend DoctorAdminDependency.
+                -->
+                <a
+                    href="{{ url_for('admin_concepts') }}"
+                    class="nav-link {% if active_page == 'concepts' %}active{% endif %}"
+                    {% if active_page == 'concepts' %}
+                        aria-current="page"
+                    {% endif %}
+                >
                     <span aria-hidden="true">◇</span>
                     <span>Medical Concepts</span>
-                    <small>09</small>
-                </span>
+                </a>
 
+                <!-- PHASE 10 - HEALTH ISSUES -->
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">♡</span>
                     <span>Health Issues</span>
                     <small>10</small>
                 </span>
 
+                <!-- PHASE 10 - SYMPTOMS -->
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">◉</span>
                     <span>Symptoms</span>
                     <small>10</small>
                 </span>
 
+                <!-- PHASE 11 - PRODUCTS AND REMEDIES -->
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">▣</span>
                     <span>Products &amp; Remedies</span>
                     <small>11</small>
                 </span>
 
+                <!-- PHASE 12 - RELATIONSHIPS -->
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">⌁</span>
                     <span>Relationships</span>
                     <small>12</small>
                 </span>
 
-
                 <!-- EVIDENCE AND SAFETY -->
                 <p class="nav-heading">
                     Evidence &amp; Safety
                 </p>
 
+                <!-- PHASE 17 - DOCUMENTS -->
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">▤</span>
                     <span>Documents</span>
                     <small>17</small>
                 </span>
 
+                <!-- PHASE 21 - PROTOCOLS AND SAFETY -->
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">⬡</span>
                     <span>Protocols &amp; Safety</span>
                     <small>21</small>
                 </span>
-
 
                 <!-- SYSTEM -->
                 <p class="nav-heading">
@@ -189,6 +208,7 @@
                     PHASE 07 - DOCTOR ADMINISTRATION
 
                     Single administrator type:
+
                     Doctor Admin with full admin access.
 
                     Uses backend authentication and
@@ -221,7 +241,6 @@
 
             </nav>
 
-
             <!-- SIDEBAR FOOTER -->
             <div class="sidebar-footer">
 
@@ -240,7 +259,6 @@
             </div>
 
         </aside>
-
 
         <!-- MAIN APPLICATION AREA -->
         <div class="main-area">
@@ -277,14 +295,12 @@
 
                 </div>
 
-
                 <div class="topbar-right">
 
                     <!-- Current environment -->
                     <span class="environment-badge">
                         {{ environment | default('development') }}
                     </span>
-
 
                     <!--
                         PHASE 06 - ADMIN IDENTITY
@@ -329,12 +345,13 @@
 
                         </div>
 
-
                         <!--
                             SECURE LOGOUT FORM
 
                             POST only.
+
                             CSRF checked by backend.
+
                             Phase 06 authentication preserved.
                         -->
                         <form
@@ -365,7 +382,6 @@
 
             </header>
 
-
             <!-- MAIN PAGE CONTENT -->
             <main
                 id="main-content"
@@ -384,7 +400,6 @@
 
             </main>
 
-
             <!-- APPLICATION FOOTER -->
             <footer class="main-footer">
 
@@ -401,7 +416,6 @@
         </div>
 
     </div>
-
 
     <!-- ADMIN JAVASCRIPT -->
     <script

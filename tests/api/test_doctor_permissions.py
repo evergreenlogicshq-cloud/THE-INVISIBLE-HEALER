@@ -102,18 +102,14 @@ def test_doctor_has_administrative_capabilities():
 
 
 def test_no_roles_or_permissions_tables():
-    """
-    Only Phase 06 authentication tables exist.
-
-    Phase 07 does not introduce an unnecessary
-    role-based database schema.
-    """
-    assert set(Base.metadata.tables) == {
-        "admin_users",
-        "admin_sessions",
-        "admin_login_attempts",
-        "audit_events",
+    """Single Doctor Admin must not require RBAC tables."""
+    forbidden_tables = {
+        "roles",
+        "permissions",
+        "admin_user_roles",
+        "role_permissions",
     }
+    assert forbidden_tables.isdisjoint(Base.metadata.tables)
 
 
 def test_unauthenticated_users_cannot_view_directory(client: TestClient):
