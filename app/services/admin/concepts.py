@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
+from app.models.admin.clinical_entities import HealthIssue, Symptom
 from app.models.admin.concept import ConceptAlias, MedicalConcept
 from app.schemas.concept import ConceptRead, ConceptWrite, normalize_label
 from app.services.admin.audit import record_audit_event
@@ -41,6 +42,67 @@ def get_concept(db: Session, concept_id: uuid.UUID) -> MedicalConcept:
         raise ConceptNotFound("Medical concept was not found.")
 
     return concept
+
+
+def get_concept_for_update(db: Session, concept_id: uuid.UUID) -> MedicalConcept:
+    """Lock a medical concept for a terminology write."""
+
+    statement = (
+        select(MedicalConcept)
+        .options(selectinload(MedicalConcept.aliases))
+        .where(MedicalConcept.id == concept_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+
+    concept = db.scalar(statement)
+
+    if concept is None:
+        raise ConceptNotFound("Medical concept was not found.")
+
+    return concept
+
+
+def get_linked_clinical_entity(db: Session, concept_id: uuid.UUID):
+    """Find a Phase 10 record associated with the concept."""
+
+    health_issue = db.get(HealthIssue, concept_id)
+
+    if health_issue is not None:
+        return health_issue
+
+    return db.get(Symptom, concept_id)
+
+
+def protect_linked_concept(
+    db: Session, concept: MedicalConcept, data: ConceptWrite
+) -> None:
+    """Prevent terminology changes after subtype linkage."""
+
+    linked = get_linked_clinical_entity(db, concept.id)
+
+    if linked is None:
+        return
+
+    current_aliases = {alias.alias for alias in concept.aliases if not alias.is_primary}
+
+    if (
+        concept.canonical_name != data.canonical_name
+        or concept.ontology_code != data.ontology_code
+        or current_aliases != set(data.aliases)
+    ):
+        raise ConceptValidationError(
+            "Terminology is locked because the concept has a linked clinical record."
+        )
+
+    if (
+        linked.status in {"in_review", "approved"}
+        and concept.status == "approved"
+        and data.status != "approved"
+    ):
+        raise ConceptValidationError(
+            "Concept approval cannot be withdrawn while its clinical record is active."
+        )
 
 
 def serialize_concept(concept: MedicalConcept) -> ConceptRead:
@@ -113,7 +175,7 @@ def list_concepts(
     return list(db.scalars(statement).all()), total
 
 
-def _replace_aliases(db: Session, concept: MedicalConcept, data: ConceptWrite) -> None:
+def replace_aliases(db: Session, concept: MedicalConcept, data: ConceptWrite) -> None:
     """Keep one primary alias and replace synonyms.
 
     A savepoint allows a failed update to be rolled
@@ -176,7 +238,7 @@ def create_concept(
             db.add(concept)
             db.flush()
 
-            _replace_aliases(db, concept, data)
+            replace_aliases(db, concept, data)
 
             record_audit_event(
                 db,
@@ -213,20 +275,27 @@ def update_concept(
 
     try:
         with db.begin_nested():
-            concept = get_concept(db, concept_id)
+            concept = get_concept_for_update(db, concept_id)
 
             if concept.status == "retired":
                 raise ConceptValidationError("Retired concepts cannot be edited.")
 
-            # Downstream records will reference stable IDs.
-            # A concept must not change its medical kind.
             if concept.kind != data.kind:
                 raise ConceptValidationError("Concept kind cannot be changed.")
 
-            # Namespace also forms part of its identity.
             if concept.namespace != data.namespace:
                 raise ConceptValidationError("Concept namespace cannot be changed.")
 
+            protect_linked_concept(db, concept, data)
+
+            current_aliases = {
+                alias.alias for alias in concept.aliases if not alias.is_primary
+            }
+
+            terminology_changed = (
+                concept.canonical_name != data.canonical_name
+                or current_aliases != set(data.aliases)
+            )
             concept.canonical_name = data.canonical_name
             concept.normalized_name = normalize_label(data.canonical_name)
             concept.ontology_code = data.ontology_code
@@ -234,7 +303,10 @@ def update_concept(
             concept.updated_by = actor_id
             concept.updated_at = datetime.now(UTC)
 
-            _replace_aliases(db, concept, data)
+            # Preserve existing alias IDs if terminology
+            # has not changed.
+            if terminology_changed:
+                replace_aliases(db, concept, data)
 
             record_audit_event(
                 db,
@@ -247,10 +319,15 @@ def update_concept(
             )
 
         db.commit()
-        return get_concept(db, concept_id)
+
+        return get_concept(
+            db,
+            concept_id,
+        )
 
     except IntegrityError as exc:
         db.rollback()
+
         raise ConceptConflict(
             "A canonical name or alias conflicts with an existing medical concept."
         ) from exc
@@ -267,16 +344,32 @@ def retire_concept(
     actor_id: uuid.UUID,
     trace_id: str,
 ) -> MedicalConcept:
-    """Soft-retire without removing referenced records."""
+    """Soft-retire a concept without invalidating active subtypes."""
 
     try:
         with db.begin_nested():
-            concept = get_concept(db, concept_id)
+            concept = get_concept_for_update(
+                db,
+                concept_id,
+            )
+
+            linked = get_linked_clinical_entity(
+                db,
+                concept_id,
+            )
+
+            if linked is not None and linked.status != "retired":
+                raise ConceptConflict(
+                    "Retire the linked clinical record "
+                    "before retiring this medical concept."
+                )
 
             if concept.status != "retired":
+                now = datetime.now(UTC)
+
                 concept.status = "retired"
-                concept.retired_at = datetime.now(UTC)
-                concept.updated_at = datetime.now(UTC)
+                concept.retired_at = now
+                concept.updated_at = now
                 concept.updated_by = actor_id
 
                 record_audit_event(
@@ -290,6 +383,7 @@ def retire_concept(
                 )
 
         db.commit()
+
         return get_concept(db, concept_id)
 
     except Exception:

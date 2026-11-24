@@ -1,8 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -24,6 +24,7 @@
         Backend routes must validate the submitted token
         before performing state-changing operations.
     -->
+
     <meta
         name="admin-csrf-token"
         content="{{ csrf_token | default('', true) | e }}"
@@ -37,17 +38,20 @@
     </title>
 
     <!-- ADMIN STYLESHEET -->
+
     <link
         rel="stylesheet"
         href="{{ url_for('static', path='/css/admin.css') }}"
     >
 
     {% block extra_css %}{% endblock %}
+
 </head>
 
 <body>
 
     <!-- ACCESSIBILITY: SKIP NAVIGATION -->
+
     <a
         class="skip-link"
         href="#main-content"
@@ -58,6 +62,7 @@
     <div class="admin-layout">
 
         <!-- MOBILE SIDEBAR OVERLAY -->
+
         <div
             class="sidebar-overlay"
             data-sidebar-overlay
@@ -65,6 +70,7 @@
         ></div>
 
         <!-- SIDEBAR -->
+
         <aside
             class="sidebar"
             id="admin-sidebar"
@@ -72,12 +78,14 @@
         >
 
             <!-- SIDEBAR HEADER -->
+
             <div class="sidebar-header">
 
                 <a
                     href="{{ url_for('admin_dashboard') }}"
                     class="brand"
                 >
+
                     <span
                         class="brand-symbol"
                         aria-hidden="true"
@@ -89,9 +97,11 @@
                         <strong>Invisible Healer</strong>
                         <small>Administration</small>
                     </span>
+
                 </a>
 
-                <!-- Mobile close button -->
+                <!-- MOBILE CLOSE BUTTON -->
+
                 <button
                     type="button"
                     class="sidebar-close"
@@ -104,12 +114,16 @@
             </div>
 
             <!-- PRIMARY NAVIGATION -->
+
             <nav
                 class="sidebar-nav"
                 aria-label="Primary navigation"
             >
 
-                <!-- WORKSPACE -->
+                <!-- ==================================
+                     WORKSPACE
+                     ================================== -->
+
                 <p class="nav-heading">
                     Workspace
                 </p>
@@ -125,7 +139,10 @@
                     <span>Dashboard</span>
                 </a>
 
-                <!-- CLINICAL KNOWLEDGE -->
+                <!-- ==================================
+                     CLINICAL KNOWLEDGE
+                     ================================== -->
+
                 <p class="nav-heading">
                     Clinical Knowledge
                 </p>
@@ -133,7 +150,7 @@
                 <!--
                     PHASE 09 - MEDICAL CONCEPT TAXONOMY
 
-                    Medical Concepts management is now active.
+                    Medical Concepts management is active.
 
                     Supports canonical medical names, aliases,
                     taxonomy types, search and soft retirement.
@@ -141,6 +158,7 @@
                     Authentication and permissions are enforced
                     by the backend DoctorAdminDependency.
                 -->
+
                 <a
                     href="{{ url_for('admin_concepts') }}"
                     class="nav-link {% if active_page == 'concepts' %}active{% endif %}"
@@ -152,40 +170,100 @@
                     <span>Medical Concepts</span>
                 </a>
 
-                <!-- PHASE 10 - HEALTH ISSUES -->
-                <span class="nav-link nav-disabled">
+                <!--
+                    PHASE 10 - HEALTH ISSUES
+
+                    Health Issues management is active.
+
+                    Supports:
+                    - Concept-linked clinical records
+                    - Body system and clinical category
+                    - Typical clinical course
+                    - Concept autocomplete
+                    - Draft creation and editing
+                    - Clinical review and approval
+                    - Soft retirement
+                    - Transactional audit logging
+
+                    Backend authentication is enforced
+                    through DoctorAdminDependency.
+                -->
+
+                <a
+                    href="{{ url_for('admin_health_issues') }}"
+                    class="nav-link {% if active_page == 'health-issues' %}active{% endif %}"
+                    {% if active_page == 'health-issues' %}
+                        aria-current="page"
+                    {% endif %}
+                >
                     <span aria-hidden="true">♡</span>
                     <span>Health Issues</span>
-                    <small>10</small>
-                </span>
+                </a>
 
-                <!-- PHASE 10 - SYMPTOMS -->
-                <span class="nav-link nav-disabled">
+                <!--
+                    PHASE 10 - SYMPTOMS
+
+                    Symptoms management is active.
+
+                    Supports:
+                    - Concept-linked symptom records
+                    - Body location and symptom category
+                    - Observation type
+                    - Concept autocomplete
+                    - Draft creation and editing
+                    - Clinical review and approval
+                    - Soft retirement
+                    - Transactional audit logging
+
+                    Backend authentication is enforced
+                    through DoctorAdminDependency.
+                -->
+
+                <a
+                    href="{{ url_for('admin_symptoms') }}"
+                    class="nav-link {% if active_page == 'symptoms' %}active{% endif %}"
+                    {% if active_page == 'symptoms' %}
+                        aria-current="page"
+                    {% endif %}
+                >
                     <span aria-hidden="true">◉</span>
                     <span>Symptoms</span>
-                    <small>10</small>
-                </span>
+                </a>
 
-                <!-- PHASE 11 - PRODUCTS AND REMEDIES -->
+                <!--
+                    PHASE 11 - PRODUCTS AND REMEDIES
+
+                    Reserved for future implementation.
+                -->
+
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">▣</span>
                     <span>Products &amp; Remedies</span>
                     <small>11</small>
                 </span>
 
-                <!-- PHASE 12 - RELATIONSHIPS -->
+                <!--
+                    PHASE 12 - RELATIONSHIPS
+
+                    Reserved for future implementation.
+                -->
+
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">⌁</span>
                     <span>Relationships</span>
                     <small>12</small>
                 </span>
 
-                <!-- EVIDENCE AND SAFETY -->
+                <!-- ==================================
+                     EVIDENCE AND SAFETY
+                     ================================== -->
+
                 <p class="nav-heading">
                     Evidence &amp; Safety
                 </p>
 
                 <!-- PHASE 17 - DOCUMENTS -->
+
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">▤</span>
                     <span>Documents</span>
@@ -193,13 +271,17 @@
                 </span>
 
                 <!-- PHASE 21 - PROTOCOLS AND SAFETY -->
+
                 <span class="nav-link nav-disabled">
                     <span aria-hidden="true">⬡</span>
                     <span>Protocols &amp; Safety</span>
                     <small>21</small>
                 </span>
 
-                <!-- SYSTEM -->
+                <!-- ==================================
+                     SYSTEM
+                     ================================== -->
+
                 <p class="nav-heading">
                     System
                 </p>
@@ -216,6 +298,7 @@
 
                     No role management is required.
                 -->
+
                 <a
                     href="{{ url_for('admin_users') }}"
                     class="nav-link {% if active_page == 'users' %}active{% endif %}"
@@ -228,6 +311,7 @@
                 </a>
 
                 <!-- PHASE 08 - AUDIT TRAIL -->
+
                 <a
                     href="{{ url_for('admin_audit') }}"
                     class="nav-link {% if active_page == 'audit' %}active{% endif %}"
@@ -242,14 +326,17 @@
             </nav>
 
             <!-- SIDEBAR FOOTER -->
+
             <div class="sidebar-footer">
 
                 <div class="sidebar-version">
+
                     <span>Application version</span>
 
                     <strong>
                         {{ app_version | default('0.1.0') }}
                     </strong>
+
                 </div>
 
                 <p>
@@ -260,15 +347,20 @@
 
         </aside>
 
-        <!-- MAIN APPLICATION AREA -->
+        <!-- ==========================================
+             MAIN APPLICATION AREA
+             ========================================== -->
+
         <div class="main-area">
 
             <!-- TOP HEADER -->
+
             <header class="topbar">
 
                 <div class="topbar-left">
 
-                    <!-- Mobile navigation toggle -->
+                    <!-- MOBILE NAVIGATION TOGGLE -->
+
                     <button
                         type="button"
                         class="menu-toggle"
@@ -280,7 +372,8 @@
                         <span aria-hidden="true">☰</span>
                     </button>
 
-                    <!-- Breadcrumb navigation -->
+                    <!-- BREADCRUMB NAVIGATION -->
+
                     <div class="breadcrumb">
 
                         <span>Administration</span>
@@ -297,7 +390,8 @@
 
                 <div class="topbar-right">
 
-                    <!-- Current environment -->
+                    <!-- CURRENT ENVIRONMENT -->
+
                     <span class="environment-badge">
                         {{ environment | default('development') }}
                     </span>
@@ -317,7 +411,8 @@
 
                         <div class="admin-identity">
 
-                            <!-- Administrator avatar -->
+                            <!-- ADMINISTRATOR AVATAR -->
+
                             <span
                                 class="admin-avatar"
                                 aria-hidden="true"
@@ -325,7 +420,8 @@
                                 {{ admin_user.full_name[:1] | upper }}
                             </span>
 
-                            <!-- Administrator information -->
+                            <!-- ADMINISTRATOR INFORMATION -->
+
                             <div class="admin-user-details">
 
                                 <span class="admin-name">
@@ -336,7 +432,8 @@
                                     {{ admin_user.email }}
                                 </span>
 
-                                <!-- Phase 07 Doctor Admin label -->
+                                <!-- DOCTOR ADMIN LABEL -->
+
                                 <span class="doctor-profile-label">
                                     Doctor Admin
                                 </span>
@@ -354,6 +451,7 @@
 
                             Phase 06 authentication preserved.
                         -->
+
                         <form
                             method="post"
                             action="{{ url_for('admin_logout') }}"
@@ -382,25 +480,32 @@
 
             </header>
 
-            <!-- MAIN PAGE CONTENT -->
+            <!-- ======================================
+                 MAIN PAGE CONTENT
+                 ====================================== -->
+
             <main
                 id="main-content"
                 class="main-content"
                 tabindex="-1"
             >
 
-                <!-- Reusable flash feedback -->
+                <!-- REUSABLE FLASH FEEDBACK -->
+
                 {% include "admin/feedback.html" %}
 
-                <!-- Reusable form error summary -->
+                <!-- REUSABLE FORM ERROR SUMMARY -->
+
                 {% include "admin/form_errors.html" %}
 
-                <!-- Child template content -->
+                <!-- CHILD TEMPLATE CONTENT -->
+
                 {% block content %}{% endblock %}
 
             </main>
 
             <!-- APPLICATION FOOTER -->
+
             <footer class="main-footer">
 
                 <span>
@@ -417,13 +522,30 @@
 
     </div>
 
-    <!-- ADMIN JAVASCRIPT -->
+    <!-- ==========================================
+         ADMIN JAVASCRIPT
+         ========================================== -->
+
     <script
         src="{{ url_for('static', path='/js/admin.js') }}"
         defer
     ></script>
 
+    <!--
+        PAGE-SPECIFIC JAVASCRIPT
+
+        Phase 09:
+        Medical Concepts JavaScript.
+
+        Phase 10:
+        Health Issues and Symptoms JavaScript modules.
+
+        Child templates load their own scripts
+        using this block.
+    -->
+
     {% block extra_js %}{% endblock %}
 
 </body>
+
 </html>

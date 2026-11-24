@@ -1,12 +1,19 @@
 """Central SQLAlchemy model registry.
 
-Every ORM model must be imported here
-for Base.metadata and Alembic discovery.
+All ORM models must be imported here for
+Base.metadata and Alembic discovery.
 """
 
-from app.models.admin.admin_user import AdminLoginAttempt, AdminSession, AdminUser
-from app.models.admin.audit import AuditEvent
-from app.models.admin.concept import ConceptAlias, MedicalConcept
+from app.models.admin import (
+    AdminLoginAttempt,
+    AdminSession,
+    AdminUser,
+    AuditEvent,
+    ConceptAlias,
+    HealthIssue,
+    MedicalConcept,
+    Symptom,
+)
 
 __all__ = [
     "AdminLoginAttempt",
@@ -14,5 +21,7 @@ __all__ = [
     "AdminUser",
     "AuditEvent",
     "ConceptAlias",
+    "HealthIssue",
     "MedicalConcept",
+    "Symptom",
 ]

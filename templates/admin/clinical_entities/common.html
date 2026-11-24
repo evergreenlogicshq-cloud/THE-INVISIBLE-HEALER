@@ -1,0 +1,633 @@
+{% extends "admin/base.html" %}
+
+{% macro metadata_fields(entity=None) %}
+
+<div class="clinical-grid">
+
+    <label class="clinical-field clinical-full">
+        Description
+
+        <textarea
+            name="description"
+            rows="5"
+            maxlength="10000"
+        >{{ entity.description if entity else '' }}</textarea>
+    </label>
+
+    {% if kind == "health_issue" %}
+
+    <label class="clinical-field">
+        Body System
+
+        <input
+            type="text"
+            name="body_system"
+            maxlength="100"
+            placeholder="e.g. Digestive system"
+            value="{{ (entity.body_system or '') if entity else '' }}"
+        >
+    </label>
+
+    <label class="clinical-field">
+        Clinical Category
+
+        <input
+            type="text"
+            name="clinical_category"
+            maxlength="100"
+            placeholder="e.g. Gastroenterology"
+            value="{{ (entity.clinical_category or '') if entity else '' }}"
+        >
+    </label>
+
+    <label class="clinical-field">
+        Typical Course
+
+        <select name="typical_course">
+
+            {% for value in [
+                'unknown',
+                'acute',
+                'chronic',
+                'recurrent',
+                'variable'
+            ] %}
+
+            <option
+                value="{{ value }}"
+                {% if entity and entity.typical_course == value %}
+                selected
+                {% endif %}
+            >
+                {{ value | title }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+    </label>
+
+    {% else %}
+
+    <label class="clinical-field">
+        Body Location
+
+        <input
+            type="text"
+            name="body_location"
+            maxlength="100"
+            placeholder="e.g. Head"
+            value="{{ (entity.body_location or '') if entity else '' }}"
+        >
+    </label>
+
+    <label class="clinical-field">
+        Symptom Category
+
+        <input
+            type="text"
+            name="symptom_category"
+            maxlength="100"
+            placeholder="e.g. Pain"
+            value="{{ (entity.symptom_category or '') if entity else '' }}"
+        >
+    </label>
+
+    <label class="clinical-field">
+        Observation Type
+
+        <select name="observation_type">
+
+            {% for value in [
+                'unknown',
+                'subjective',
+                'objective',
+                'both'
+            ] %}
+
+            <option
+                value="{{ value }}"
+                {% if entity and entity.observation_type == value %}
+                selected
+                {% endif %}
+            >
+                {{ value | title }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+    </label>
+
+    {% endif %}
+
+</div>
+
+{% endmacro %}
+
+
+{% block content %}
+
+<section
+    id="clinical-page"
+    data-section="{{ section }}"
+    data-kind="{{ kind }}"
+    data-api-base="/api/admin/{{ section }}"
+    data-csrf="{{ csrf_token }}"
+>
+
+    <header class="clinical-header">
+
+        <div>
+            <span class="clinical-eyebrow">
+                CLINICAL DATA MANAGEMENT
+            </span>
+
+            <h1>{{ page_title }}</h1>
+
+            <p>
+                {% block clinical_intro %}{% endblock %}
+            </p>
+        </div>
+
+    </header>
+
+    <noscript>
+        JavaScript is required to create, update,
+        and review clinical records.
+    </noscript>
+
+    <div
+        id="clinical-feedback"
+        class="clinical-feedback"
+        role="alert"
+        tabindex="-1"
+        hidden
+    ></div>
+
+    <!-- CREATE RECORD -->
+
+    <section class="clinical-panel">
+
+        <h2>
+            Create
+            {{ "Health Issue" if kind == "health_issue" else "Symptom" }}
+        </h2>
+
+        <p class="clinical-help">
+            Select an existing medical concept.
+            New clinical records are always created as drafts.
+        </p>
+
+        <form
+            id="clinical-create-form"
+            data-clinical-form
+            data-operation="create"
+            method="post"
+        >
+
+            <label
+                for="concept-search"
+                class="clinical-field"
+            >
+                Search Medical Concept
+            </label>
+
+            <input
+                id="concept-search"
+                type="search"
+                maxlength="200"
+                autocomplete="off"
+                placeholder="Search canonical name or alias"
+            >
+
+            <label
+                for="concept-id"
+                class="clinical-field"
+            >
+                Select Matching Concept
+            </label>
+
+            <select
+                id="concept-id"
+                name="concept_id"
+                required
+            >
+                <option value="">
+                    Search for a medical concept first
+                </option>
+            </select>
+
+            <p
+                id="concept-search-status"
+                class="clinical-help"
+                aria-live="polite"
+            ></p>
+
+            {{ metadata_fields() }}
+
+            <button
+                type="submit"
+                class="clinical-button"
+                data-js-submit
+                disabled
+            >
+                Create Draft
+            </button>
+
+            <a
+                href="{{ url_for('admin_concepts') }}"
+                class="clinical-link"
+            >
+                Manage Medical Concepts
+            </a>
+
+        </form>
+
+    </section>
+
+    <!-- SEARCH AND FILTER -->
+
+    <section class="clinical-panel">
+
+        <h2>
+            Existing {{ page_title }}
+        </h2>
+
+        <form
+            method="get"
+            action="/admin/{{ section }}"
+            class="clinical-filter"
+        >
+
+            <input
+                type="search"
+                name="q"
+                maxlength="200"
+                placeholder="Search clinical records"
+                aria-label="Search clinical records"
+                value="{{ q }}"
+            >
+
+            <select
+                name="status"
+                aria-label="Filter by status"
+            >
+
+                <option value="">
+                    All statuses
+                </option>
+
+                {% for value in [
+                    'draft',
+                    'in_review',
+                    'approved',
+                    'retired'
+                ] %}
+
+                <option
+                    value="{{ value }}"
+                    {% if selected_status == value %}
+                    selected
+                    {% endif %}
+                >
+                    {{ value | replace('_', ' ') | title }}
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+            <button
+                type="submit"
+                class="clinical-button"
+            >
+                Filter
+            </button>
+
+            <a href="/admin/{{ section }}">
+                Reset
+            </a>
+
+        </form>
+
+        <p class="clinical-help">
+            {{ total }} record(s) found
+        </p>
+
+        <!-- RECORD TABLE -->
+
+        {% if entities %}
+
+        <div class="clinical-table-wrapper">
+
+            <table class="clinical-table">
+
+                <thead>
+                    <tr>
+                        <th>Canonical Name</th>
+                        <th>Namespace</th>
+                        <th>Status</th>
+                        <th>Concept Status</th>
+                        <th>Version</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for entity in entities %}
+
+                    <tr>
+
+                        <td>
+                            <strong>
+                                {{ entity.canonical_name }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {{ entity.namespace }}
+                        </td>
+
+                        <td>
+                            <span class="clinical-status clinical-status-{{ entity.status }}">
+                                {{ entity.status | replace('_', ' ') | title }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ entity.concept_status | title }}
+                        </td>
+
+                        <td>
+                            {{ entity.version }}
+                        </td>
+
+                        <td>
+
+                            <details>
+
+                                <summary>
+                                    View / Manage
+                                </summary>
+
+                                <div class="clinical-record">
+
+                                    <p class="clinical-description">
+                                        {{ entity.description or 'No description provided.' }}
+                                    </p>
+
+                                    {% if kind == "health_issue" %}
+
+                                    <p>
+                                        Body system:
+                                        {{ entity.body_system or 'Not specified' }}
+                                    </p>
+
+                                    <p>
+                                        Clinical category:
+                                        {{ entity.clinical_category or 'Not specified' }}
+                                    </p>
+
+                                    <p>
+                                        Typical course:
+                                        {{ entity.typical_course | title }}
+                                    </p>
+
+                                    {% else %}
+
+                                    <p>
+                                        Body location:
+                                        {{ entity.body_location or 'Not specified' }}
+                                    </p>
+
+                                    <p>
+                                        Symptom category:
+                                        {{ entity.symptom_category or 'Not specified' }}
+                                    </p>
+
+                                    <p>
+                                        Observation type:
+                                        {{ entity.observation_type | title }}
+                                    </p>
+
+                                    {% endif %}
+
+                                    {% if entity.review_notes %}
+
+                                    <p>
+                                        <strong>Review notes:</strong>
+                                        {{ entity.review_notes }}
+                                    </p>
+
+                                    {% endif %}
+
+                                    <!-- EDIT DRAFT -->
+
+                                    {% if entity.status == "draft" %}
+
+                                    <form
+                                        method="post"
+                                        data-clinical-form
+                                        data-operation="update"
+                                        data-concept-id="{{ entity.concept_id }}"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="version"
+                                            value="{{ entity.version }}"
+                                        >
+
+                                        {{ metadata_fields(entity) }}
+
+                                        <button
+                                            type="submit"
+                                            class="clinical-button"
+                                            data-js-submit
+                                            disabled
+                                        >
+                                            Save Changes
+                                        </button>
+
+                                    </form>
+
+                                    <!-- SUBMIT FOR REVIEW -->
+
+                                    <form
+                                        method="post"
+                                        data-clinical-form
+                                        data-operation="submit"
+                                        data-concept-id="{{ entity.concept_id }}"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="version"
+                                            value="{{ entity.version }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="clinical-button-secondary"
+                                            data-js-submit
+                                            disabled
+                                        >
+                                            Submit for Review
+                                        </button>
+
+                                    </form>
+
+                                    {% endif %}
+
+                                    <!-- REVIEW AND APPROVAL -->
+
+                                    {% if entity.status == "in_review" %}
+
+                                        {% for operation in ['approve', 'reject'] %}
+
+                                            {% if operation != 'approve' or entity.concept_status == 'approved' %}
+
+                                            <form
+                                                method="post"
+                                                data-clinical-form
+                                                data-operation="{{ operation }}"
+                                                data-concept-id="{{ entity.concept_id }}"
+                                            >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="version"
+                                                    value="{{ entity.version }}"
+                                                >
+
+                                                <label class="clinical-field">
+
+                                                    {{ "Approval Notes" if operation == "approve" else "Rejection Reason" }}
+
+                                                    <textarea
+                                                        name="notes"
+                                                        rows="3"
+                                                        maxlength="2000"
+                                                        required
+                                                    ></textarea>
+
+                                                </label>
+
+                                                <button
+                                                    type="submit"
+                                                    class="clinical-button-secondary"
+                                                    data-js-submit
+                                                    disabled
+                                                >
+                                                    {{ "Approve Record" if operation == "approve" else "Return to Draft" }}
+                                                </button>
+
+                                            </form>
+
+                                            {% endif %}
+
+                                        {% endfor %}
+
+                                        {% if entity.concept_status != "approved" %}
+
+                                        <p class="clinical-help">
+                                            Approve the medical concept first.
+                                        </p>
+
+                                        {% endif %}
+
+                                    {% endif %}
+
+                                    <!-- RETIRE RECORD -->
+
+                                    {% if entity.status != "retired" %}
+
+                                    <form
+                                        method="post"
+                                        data-clinical-form
+                                        data-operation="retire"
+                                        data-concept-id="{{ entity.concept_id }}"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="version"
+                                            value="{{ entity.version }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="clinical-button-danger"
+                                            data-js-submit
+                                            disabled
+                                        >
+                                            Retire Record
+                                        </button>
+
+                                    </form>
+
+                                    {% else %}
+
+                                    <p class="clinical-help">
+                                        This record is retired and read-only.
+                                    </p>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </details>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- PAGINATION -->
+
+        <nav class="clinical-pagination">
+
+            {% if page > 1 %}
+
+            <a href="?page={{ page - 1 }}&amp;q={{ q | urlencode }}{% if selected_status %}&amp;status={{ selected_status }}{% endif %}">
+                Previous
+            </a>
+
+            {% endif %}
+
+            <span>
+                Page {{ page }} of {{ pages }}
+            </span>
+
+            {% if page < pages %}
+
+            <a href="?page={{ page + 1 }}&amp;q={{ q | urlencode }}{% if selected_status %}&amp;status={{ selected_status }}{% endif %}">
+                Next
+            </a>
+
+            {% endif %}
+
+        </nav>
+
+        {% else %}
+
+        <p>
+            No clinical records found.
+        </p>
+
+        {% endif %}
+
+    </section>
+
+</section>
+
+{% endblock %}

@@ -1713,3 +1713,277 @@ a.nav-link:hover {
         width: 100%;
     }
 }
+/* ==========================================
+   PHASE 10 - CLINICAL ENTITY MANAGEMENT
+   ========================================== */
+
+.clinical-header {
+    margin-bottom: 24px;
+}
+
+.clinical-header h1 {
+    margin: 8px 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.clinical-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    color: #64748b;
+}
+
+.clinical-header p,
+.clinical-help {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.clinical-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.clinical-panel h2 {
+    margin: 0 0 16px;
+    font-size: 19px;
+    color: #0f172a;
+}
+
+.clinical-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        2,
+        minmax(0, 1fr)
+    );
+    gap: 18px;
+    margin: 20px 0;
+}
+
+.clinical-full {
+    grid-column: 1 / -1;
+}
+
+.clinical-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 10px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.clinical-panel input,
+.clinical-panel select,
+.clinical-panel textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #0f172a;
+    font: inherit;
+}
+
+.clinical-panel textarea {
+    min-height: 70px;
+    resize: vertical;
+}
+
+.clinical-panel input:focus,
+.clinical-panel select:focus,
+.clinical-panel textarea:focus {
+    outline: 2px solid #0f766e;
+    outline-offset: 2px;
+}
+
+.clinical-button,
+.clinical-button-secondary,
+.clinical-button-danger {
+    border: 0;
+    border-radius: 7px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.clinical-button {
+    background: #0f766e;
+    color: #ffffff;
+}
+
+.clinical-button-secondary {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.clinical-button-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.clinical-panel button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.clinical-link {
+    margin-left: 12px;
+    color: #0f766e;
+    font-size: 13px;
+}
+
+.clinical-filter {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.clinical-filter input {
+    flex: 2;
+    min-width: 0;
+}
+
+.clinical-filter select {
+    flex: 1;
+    min-width: 0;
+}
+
+.clinical-table-wrapper {
+    overflow-x: auto;
+}
+
+.clinical-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.clinical-table th,
+.clinical-table td {
+    text-align: left;
+    padding: 14px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+}
+
+.clinical-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+}
+
+.clinical-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.clinical-status-draft {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.clinical-status-in_review {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.clinical-status-approved {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.clinical-status-retired {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.clinical-record {
+    min-width: 270px;
+    padding: 16px;
+    margin-top: 12px;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.clinical-record form {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.clinical-record .clinical-grid {
+    grid-template-columns: 1fr;
+}
+
+.clinical-description {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.clinical-feedback {
+    padding: 14px;
+    margin-bottom: 20px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #991b1b;
+    overflow-wrap: anywhere;
+}
+
+.clinical-feedback[hidden] {
+    display: none;
+}
+
+.clinical-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    margin-top: 24px;
+    font-size: 13px;
+}
+
+.clinical-table summary {
+    cursor: pointer;
+    color: #0f766e;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+
+    .clinical-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .clinical-panel {
+        padding: 16px;
+    }
+
+    .clinical-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .clinical-record {
+        min-width: 240px;
+    }
+
+    .clinical-link {
+        display: block;
+        margin: 12px 0 0;
+    }
+}

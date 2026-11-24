@@ -227,7 +227,7 @@ def api_retire_concept(
         )
         return serialize_concept(concept)
 
-    except ConceptNotFound as exc:
+    except (ConceptNotFound, ConceptConflict) as exc:
         raise service_error(exc) from exc
 
 
@@ -407,7 +407,7 @@ def admin_retire_concept(
             trace_id=request.state.trace_id,
         )
 
-    except ConceptNotFound as exc:
+    except (ConceptNotFound, ConceptConflict) as exc:
         raise service_error(exc) from exc
 
     return RedirectResponse("/admin/concepts?notice=retired", status_code=303)

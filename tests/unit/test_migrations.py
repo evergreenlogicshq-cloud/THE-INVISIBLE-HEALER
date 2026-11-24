@@ -128,7 +128,7 @@ def test_admin_auth_revision_exists(migration_config: Config) -> None:
 
 def test_migration_history_has_single_head(migration_config: Config) -> None:
     script = ScriptDirectory.from_config(migration_config)
-    assert script.get_heads() == ["0004"]
+    assert script.get_heads() == ["0005"]
 
 
 # ============================================
@@ -137,16 +137,15 @@ def test_migration_history_has_single_head(migration_config: Config) -> None:
 
 
 def test_metadata_contains_auth_tables() -> None:
-    """
-    Phase 06 introduces three authentication
-    tables without introducing clinical tables.
-    """
+    """Verify ORM metadata for Phases 01-10."""
 
     assert Base.metadata is not None
     assert set(Base.metadata.tables) == AUTH_TABLES | {
         "audit_events",
         "medical_concepts",
         "concept_aliases",
+        "health_issues",
+        "symptoms",
     }
 
 
@@ -418,3 +417,73 @@ def test_audit_revision_exists(migration_config: Config) -> None:
     revision = script.get_revision("0003")
     assert revision is not None
     assert revision.down_revision == "0002"
+
+
+def test_phase10_revision_exists(
+    migration_config: Config,
+) -> None:
+    script = ScriptDirectory.from_config(migration_config)
+    revision = script.get_revision("0005")
+    assert revision is not None
+    assert revision.down_revision == "0004"
+
+
+def test_phase10_upgrade(
+    migration_config: Config, isolated_migration_database: str
+) -> None:
+    command.upgrade(migration_config, "head")
+    engine = create_engine(isolated_migration_database)
+
+    try:
+        inspector = inspect(engine)
+        tables = set(inspector.get_table_names())
+
+        assert "health_issues" in tables
+        assert "symptoms" in tables
+
+        for table_name in ("health_issues", "symptoms"):
+            foreign_keys = inspector.get_foreign_keys(table_name)
+
+            assert any(
+                fk["referred_table"] == "medical_concepts"
+                and fk["constrained_columns"] == ["concept_id"]
+                for fk in foreign_keys
+            )
+
+            primary_key = inspector.get_pk_constraint(table_name)
+
+            assert primary_key["constrained_columns"] == ["concept_id"]
+
+            columns = {column["name"] for column in inspector.get_columns(table_name)}
+
+            assert {
+                "concept_id",
+                "description",
+                "status",
+                "version",
+                "created_by",
+                "reviewed_by",
+                "reviewed_at",
+            }.issubset(columns)
+
+    finally:
+        engine.dispose()
+
+
+def test_phase10_downgrade(
+    migration_config: Config, isolated_migration_database: str
+) -> None:
+    command.upgrade(migration_config, "0005")
+    command.downgrade(migration_config, "0004")
+    engine = create_engine(isolated_migration_database)
+
+    try:
+        tables = set(inspect(engine).get_table_names())
+        assert "health_issues" not in tables
+        assert "symptoms" not in tables
+        assert "medical_concepts" in tables
+        assert "concept_aliases" in tables
+        assert "audit_events" in tables
+
+    finally:
+        engine.dispose()

@@ -1,0 +1,27 @@
+{% extends "admin/clinical_entities/common.html" %}
+
+
+{% block title %}
+Health Issues | {{ app_name }}
+{% endblock %}
+
+
+{% block clinical_intro %}
+
+Manage health issue definitions, body systems,
+clinical categories and doctor review status.
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script
+    type="module"
+    src="{{ url_for(
+        'static',
+        path='js/clinical_entities/health_issue.js'
+    ) }}"
+></script>
+
+{% endblock %}
