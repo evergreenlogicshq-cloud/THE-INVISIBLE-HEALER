@@ -8,13 +8,18 @@ from sqlalchemy import select
 from app.core.config import get_settings
 from app.db.session import create_database_engine, create_session_factory
 from app.models.admin.admin_user import AdminUser
-from app.models.admin.clinical_entities import HealthIssue, Symptom
-from app.models.admin.concept import MedicalConcept
-from app.schemas.clinical_entities import HealthIssueCreate, SymptomCreate
-from app.schemas.concept import ConceptWrite, normalize_label
-from app.services.admin.clinical_entities.health_issue import create_health_issue
-from app.services.admin.clinical_entities.symptom import create_symptom
-from app.services.admin.concepts import create_concept
+from app.models.admin.medical_concepts.clinical_entities import HealthIssue, Symptom
+from app.models.admin.medical_concepts.concept import MedicalConcept
+from app.schemas.medical_concepts.clinical_entities import (
+    HealthIssueCreate,
+    SymptomCreate,
+)
+from app.schemas.medical_concepts.concept import ConceptWrite, normalize_label
+from app.services.admin.medical_concepts.clinical_entities.health_issue import (
+    create_health_issue,
+)
+from app.services.admin.medical_concepts.clinical_entities.symptom import create_symptom
+from app.services.admin.medical_concepts.concepts import create_concept
 
 NAMESPACE = "phase10_demo"
 
