@@ -6,7 +6,13 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-ClinicalEntityKind = Literal["health_issue", "symptom"]
+ClinicalEntityKind = Literal[
+    "health_issue",
+    "symptom",
+    "product",
+    "remedy",
+    "ingredient",
+]
 
 
 ClinicalEntityStatus = Literal["draft", "in_review", "approved", "retired"]

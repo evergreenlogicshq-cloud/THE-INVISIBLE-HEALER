@@ -1,0 +1,1 @@
+"""Catalog entity unit tests."""

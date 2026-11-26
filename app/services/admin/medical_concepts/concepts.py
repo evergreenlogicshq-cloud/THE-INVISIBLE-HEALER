@@ -7,6 +7,11 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
+from app.models.admin.medical_concepts.catalog_entities import (
+    Ingredient,
+    Product,
+    Remedy,
+)
 from app.models.admin.medical_concepts.clinical_entities import HealthIssue, Symptom
 from app.models.admin.medical_concepts.concept import ConceptAlias, MedicalConcept
 from app.schemas.medical_concepts.concept import (
@@ -68,14 +73,12 @@ def get_concept_for_update(db: Session, concept_id: uuid.UUID) -> MedicalConcept
 
 
 def get_linked_clinical_entity(db: Session, concept_id: uuid.UUID):
-    """Find a Phase 10 record associated with the concept."""
-
-    health_issue = db.get(HealthIssue, concept_id)
-
-    if health_issue is not None:
-        return health_issue
-
-    return db.get(Symptom, concept_id)
+    """Find a subtype associated with the concept."""
+    for model in (HealthIssue, Symptom, Product, Remedy, Ingredient):
+        entity = db.get(model, concept_id)
+        if entity is not None:
+            return entity
+    return None
 
 
 def protect_linked_concept(

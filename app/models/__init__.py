@@ -11,7 +11,10 @@ from app.models.admin import (
     AuditEvent,
     ConceptAlias,
     HealthIssue,
+    Ingredient,
     MedicalConcept,
+    Product,
+    Remedy,
     Symptom,
 )
 
@@ -22,6 +25,9 @@ __all__ = [
     "AuditEvent",
     "ConceptAlias",
     "HealthIssue",
+    "Ingredient",
     "MedicalConcept",
+    "Product",
+    "Remedy",
     "Symptom",
 ]

@@ -25,6 +25,7 @@ PostgreSQL-specific schema drift is verified
 separately against PostgreSQL using Alembic.
 """
 
+from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -128,7 +129,7 @@ def test_admin_auth_revision_exists(migration_config: Config) -> None:
 
 def test_migration_history_has_single_head(migration_config: Config) -> None:
     script = ScriptDirectory.from_config(migration_config)
-    assert script.get_heads() == ["0005"]
+    assert script.get_heads() == ["0006"]
 
 
 # ============================================
@@ -146,6 +147,9 @@ def test_metadata_contains_auth_tables() -> None:
         "concept_aliases",
         "health_issues",
         "symptoms",
+        "products",
+        "remedies",
+        "ingredients",
     }
 
 
@@ -487,3 +491,75 @@ def test_phase10_downgrade(
 
     finally:
         engine.dispose()
+
+
+def test_phase11_revision_exists(migration_config: Config) -> None:
+    revision = ScriptDirectory.from_config(migration_config).get_revision("0006")
+    assert revision is not None
+    assert revision.down_revision == "0005"
+
+
+def test_phase11_upgrade_and_downgrade(
+    migration_config: Config, isolated_migration_database: str
+) -> None:
+    command.upgrade(migration_config, "head")
+    engine = create_engine(isolated_migration_database)
+    try:
+        inspector = inspect(engine)
+        for table in ("products", "remedies", "ingredients"):
+            assert table in inspector.get_table_names()
+            assert {
+                "concept_id",
+                "status",
+                "version",
+                "source_reference",
+                "evidence_notes",
+            } <= {c["name"] for c in inspector.get_columns(table)}
+            assert any(
+                index["column_names"] == ["status"]
+                for index in inspector.get_indexes(table)
+            )
+            assert any(
+                fk["referred_table"] == "medical_concepts"
+                and fk["constrained_columns"] == ["concept_id"]
+                for fk in inspector.get_foreign_keys(table)
+            )
+            checks = {
+                constraint["name"]
+                for constraint in inspector.get_check_constraints(table)
+            }
+            assert f"ck_{table}_catalog_status" in checks
+            assert f"ck_{table}_catalog_version" in checks
+        checks = {
+            constraint["name"]
+            for constraint in inspector.get_check_constraints("ingredients")
+        }
+        assert {
+            "ck_ingredients_reference_amount_positive",
+            "ck_ingredients_reference_amount_complete",
+        } <= checks
+        command.downgrade(migration_config, "0005")
+        assert not {"products", "remedies", "ingredients"} & set(
+            inspect(engine).get_table_names()
+        )
+    finally:
+        engine.dispose()
+
+
+def test_phase11_postgresql_sql_compiles_offline(
+    migration_config: Config, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = StringIO()
+    migration_config.output_buffer = output
+    settings = SimpleNamespace(
+        DATABASE_URL="postgresql+psycopg://test:test@localhost/test",
+        DB_CONNECT_TIMEOUT=5,
+    )
+    monkeypatch.setattr("app.core.config.get_settings", lambda: settings)
+    command.upgrade(migration_config, "0005:0006", sql=True)
+    sql = output.getvalue()
+    assert "CREATE TABLE products" in sql
+    assert "CREATE TABLE remedies" in sql
+    assert "CREATE TABLE ingredients" in sql
+    assert "NUMERIC(18, 6)" in sql
+    assert "ck_ingredients_reference_amount_complete" in sql

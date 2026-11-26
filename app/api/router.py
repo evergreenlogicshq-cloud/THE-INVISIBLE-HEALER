@@ -14,6 +14,9 @@ from fastapi import APIRouter
 from app.api.admin.audit import router as admin_audit_router
 from app.api.admin.auth import router as admin_auth_router
 from app.api.admin.dashboard import router as admin_dashboard_router
+from app.api.admin.medical_concepts.catalog_entities import (
+    router as admin_catalog_router,
+)
 from app.api.admin.medical_concepts.clinical_entities import (
     router as admin_clinical_router,
 )
@@ -29,3 +32,4 @@ api_router.include_router(admin_users_router)
 api_router.include_router(admin_audit_router)
 api_router.include_router(admin_concepts_router)
 api_router.include_router(admin_clinical_router)
+api_router.include_router(admin_catalog_router)

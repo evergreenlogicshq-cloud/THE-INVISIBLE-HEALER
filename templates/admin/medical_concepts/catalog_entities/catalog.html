@@ -1,0 +1,525 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<section
+    id="catalog-manager"
+    data-section="{{ section }}"
+    data-csrf-token="{{ csrf_token }}"
+    class="catalog-manager"
+>
+
+    <header class="catalog-header">
+        <div>
+            <h1>{{ page_title }}</h1>
+
+            <p>
+                Manage concept-linked catalog records,
+                source references and doctor reviews.
+            </p>
+        </div>
+
+        <span>Phase 11</span>
+    </header>
+
+    <div class="catalog-notice">
+        Catalog approval does not establish clinical efficacy,
+        patient suitability or treatment safety.
+    </div>
+
+    <noscript>JavaScript is required to create or manage catalog records.</noscript>
+
+    <p
+        id="catalog-feedback"
+        role="status"
+        aria-live="polite"
+        hidden
+    ></p>
+
+    <!-- CREATE RECORD -->
+
+    <section class="catalog-panel">
+
+        <h2>Create Draft</h2>
+
+        <p>
+            First create the corresponding medical concept
+            in Medical Concepts.
+        </p>
+
+        <form id="catalog-create-form" method="post">
+
+            <label class="clinical-field">
+                Search Medical Concept
+
+                <input
+                    type="search"
+                    id="catalog-concept-search"
+                    placeholder="Search {{ kind }} concepts"
+                    maxlength="200"
+                    autocomplete="off"
+                >
+            </label>
+
+            <button
+                type="button"
+                id="catalog-concept-search-button"
+                class="catalog-button"
+                data-catalog-js
+                disabled
+            >
+                Search
+            </button>
+
+            <label class="clinical-field">
+                Select Medical Concept
+
+                <select name="concept_id" required>
+                    <option value="">
+                        Search and select a concept
+                    </option>
+                </select>
+            </label>
+
+            <label class="clinical-field">
+                Description
+
+                <textarea
+                    name="description"
+                    rows="4"
+                    maxlength="10000"
+                ></textarea>
+            </label>
+
+            <div class="catalog-grid">
+
+                {% for field, label in fields %}
+
+                <label class="clinical-field">
+
+                    {{ label }}
+
+                    {% if field in ['preparation', 'limitations'] %}
+
+                    <textarea
+                        name="{{ field }}"
+                        rows="3"
+                        maxlength="10000"
+                    ></textarea>
+
+                    {% elif field == 'reference_unit' %}
+
+                    <select name="{{ field }}">
+                        <option value="">Unknown</option>
+
+                        {% for unit in [
+                            'mcg', 'mg', 'g', 'kg',
+                            'mL', 'L', 'IU', 'CFU'
+                        ] %}
+
+                        <option value="{{ unit }}">
+                            {{ unit }}
+                        </option>
+
+                        {% endfor %}
+                    </select>
+
+                    {% else %}
+
+                    <input
+                        type="text"
+                        name="{{ field }}"
+                        {% if field == 'reference_amount' %}
+                        inputmode="decimal"
+                        {% endif %}
+                    >
+
+                    {% endif %}
+
+                </label>
+
+                {% endfor %}
+
+            </div>
+
+            <label class="clinical-field">
+                Source Reference
+
+                <textarea
+                    name="source_reference"
+                    rows="3"
+                    maxlength="4000"
+                    placeholder="Source title, author, edition or label reference"
+                ></textarea>
+            </label>
+
+            <label class="clinical-field">
+                Preliminary Claim / Evidence Notes
+
+                <textarea
+                    name="evidence_notes"
+                    rows="4"
+                    maxlength="10000"
+                ></textarea>
+            </label>
+
+            <button
+                type="submit"
+                class="catalog-button catalog-primary"
+                data-catalog-js
+                disabled
+            >
+                Create Draft
+            </button>
+
+        </form>
+
+    </section>
+
+    <!-- FILTERS -->
+
+    <section class="catalog-panel">
+
+        <h2>Catalog Records ({{ total }})</h2>
+
+        <form method="get" action="/admin/{{ section }}">
+
+            <div class="catalog-grid">
+
+                <label class="clinical-field">
+                    Search
+
+                    <input
+                        type="search"
+                        name="q"
+                        value="{{ q }}"
+                        maxlength="200"
+                        placeholder="Search canonical name or alias"
+                    >
+                </label>
+
+                <label class="clinical-field">
+                    Status
+
+                    <select name="status">
+                        <option value="">All statuses</option>
+
+                        {% for status in [
+                            'draft',
+                            'in_review',
+                            'approved',
+                            'retired'
+                        ] %}
+
+                        <option
+                            value="{{ status }}"
+                            {% if selected_status == status %}
+                            selected
+                            {% endif %}
+                        >
+                            {{ status | replace('_', ' ') | title }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+                </label>
+
+            </div>
+
+            <button type="submit" class="catalog-button">
+                Apply Filters
+            </button>
+
+            <a href="/admin/{{ section }}">
+                Clear Filters
+            </a>
+
+        </form>
+
+        <!-- CATALOG TABLE -->
+
+        <div class="catalog-table-wrapper">
+
+            <table class="catalog-table">
+
+                <thead>
+                    <tr>
+                        <th>Canonical Name</th>
+                        <th>Concept Status</th>
+                        <th>Catalog Status</th>
+                        <th>Version</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for entity in entities %}
+
+                    <tr>
+                        <td>{{ entity.canonical_name }}</td>
+
+                        <td>{{ entity.concept_status | title }}</td>
+
+                        <td>
+                            <span
+                                class="catalog-status"
+                                data-status="{{ entity.status }}"
+                            >
+                                {{ entity.status | replace('_', ' ') | title }}
+                            </span>
+                        </td>
+
+                        <td>{{ entity.version }}</td>
+
+                        <td>
+                            <button
+                                type="button"
+                                class="catalog-button"
+                                data-open-record="{{ entity.concept_id }}"
+                                data-catalog-js
+                                disabled
+                            >
+                                View / Manage
+                            </button>
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="5">
+                            No catalog records found.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- PAGINATION -->
+
+        <nav class="catalog-pagination" aria-label="Pagination">
+
+            {% if page > 1 %}
+
+            <a
+                href="?page={{ page - 1 }}&q={{ q | urlencode }}&status={{ selected_status }}"
+            >
+                Previous
+            </a>
+
+            {% endif %}
+
+            <span>Page {{ page }} of {{ pages }}</span>
+
+            {% if page < pages %}
+
+            <a
+                href="?page={{ page + 1 }}&q={{ q | urlencode }}&status={{ selected_status }}"
+            >
+                Next
+            </a>
+
+            {% endif %}
+
+        </nav>
+
+    </section>
+
+    <!-- EDIT AND REVIEW DIALOG -->
+
+    <dialog id="catalog-record-dialog">
+
+        <h2 id="catalog-record-title">
+            Manage Record
+        </h2>
+
+        <p id="catalog-record-status"></p>
+        <p id="catalog-previous-review" hidden></p>
+        <p id="catalog-concept-approval" hidden>Approve the medical concept before approving this catalog record.</p>
+
+        <form id="catalog-edit-form" method="post">
+
+            <label class="clinical-field">
+                Description
+
+                <textarea
+                    name="description"
+                    rows="4"
+                    maxlength="10000"
+                ></textarea>
+            </label>
+
+            <div class="catalog-grid">
+
+                {% for field, label in fields %}
+
+                <label class="clinical-field">
+
+                    {{ label }}
+
+                    {% if field in ['preparation', 'limitations'] %}
+
+                    <textarea
+                        name="{{ field }}"
+                        rows="3"
+                        maxlength="10000"
+                    ></textarea>
+
+                    {% elif field == 'reference_unit' %}
+
+                    <select name="{{ field }}">
+
+                        <option value="">Unknown</option>
+
+                        {% for unit in [
+                            'mcg', 'mg', 'g', 'kg',
+                            'mL', 'L', 'IU', 'CFU'
+                        ] %}
+
+                        <option value="{{ unit }}">
+                            {{ unit }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                    {% else %}
+
+                    <input type="text" name="{{ field }}">
+
+                    {% endif %}
+
+                </label>
+
+                {% endfor %}
+
+            </div>
+
+            <label class="clinical-field">
+                Source Reference
+
+                <textarea
+                    name="source_reference"
+                    rows="3"
+                    maxlength="4000"
+                ></textarea>
+            </label>
+
+            <label class="clinical-field">
+                Evidence Notes
+
+                <textarea
+                    name="evidence_notes"
+                    rows="3"
+                    maxlength="10000"
+                ></textarea>
+            </label>
+
+            <button
+                type="submit"
+                id="catalog-save-button"
+                class="catalog-button catalog-primary"
+                data-catalog-js
+                disabled
+            >
+                Save Changes
+            </button>
+
+        </form>
+
+        <div class="catalog-review">
+
+            <h3>Doctor Review</h3>
+
+            <label class="clinical-field">
+                Review Notes
+
+                <textarea
+                    id="catalog-review-notes"
+                    rows="3"
+                    maxlength="2000"
+                ></textarea>
+            </label>
+
+            <div class="catalog-actions">
+
+                <button
+                    type="button"
+                    data-catalog-action="submit"
+                    class="catalog-button"
+                    data-catalog-js
+                    disabled
+                >
+                    Submit for Review
+                </button>
+
+                <button
+                    type="button"
+                    data-catalog-action="approve"
+                    class="catalog-button catalog-primary"
+                    data-catalog-js
+                    disabled
+                >
+                    Approve
+                </button>
+
+                <button
+                    type="button"
+                    data-catalog-action="reject"
+                    class="catalog-button"
+                    data-catalog-js
+                    disabled
+                >
+                    Reject
+                </button>
+
+                <button
+                    type="button"
+                    data-catalog-action="retire"
+                    class="catalog-button catalog-danger"
+                    data-catalog-js
+                    disabled
+                >
+                    Retire
+                </button>
+
+            </div>
+
+        </div>
+
+        <p
+            id="catalog-dialog-feedback"
+            role="status"
+            aria-live="polite"
+        ></p>
+
+        <button
+            type="button"
+            id="catalog-close-dialog"
+            class="catalog-button"
+        >
+            Close
+        </button>
+
+    </dialog>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script
+    src="{{ url_for('static', path='/js/medical_concepts/catalog_entities/catalog_entities.js') }}"
+    defer
+></script>
+
+{% endblock %}

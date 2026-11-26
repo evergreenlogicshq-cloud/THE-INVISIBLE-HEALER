@@ -7,8 +7,24 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
+from app.models.admin.medical_concepts.catalog_entities import (
+    Ingredient,
+    Product,
+    Remedy,
+)
 from app.models.admin.medical_concepts.clinical_entities import HealthIssue, Symptom
 from app.models.admin.medical_concepts.concept import ConceptAlias, MedicalConcept
+from app.schemas.medical_concepts.catalog_entities.common import (
+    IngredientCreate,
+    IngredientRead,
+    IngredientUpdate,
+    ProductCreate,
+    ProductRead,
+    ProductUpdate,
+    RemedyCreate,
+    RemedyRead,
+    RemedyUpdate,
+)
 from app.schemas.medical_concepts.clinical_entities import (
     ClinicalEntityKind,
     ConceptOption,
@@ -24,9 +40,13 @@ from app.schemas.medical_concepts.clinical_entities import (
 from app.schemas.medical_concepts.concept import normalize_label
 from app.services.admin.audit import record_audit_event
 
-ClinicalEntity = HealthIssue | Symptom
-CreateData = HealthIssueCreate | SymptomCreate
-UpdateData = HealthIssueUpdate | SymptomUpdate
+ClinicalEntity = HealthIssue | Symptom | Product | Remedy | Ingredient
+CreateData = (
+    HealthIssueCreate | SymptomCreate | ProductCreate | RemedyCreate | IngredientCreate
+)
+UpdateData = (
+    HealthIssueUpdate | SymptomUpdate | ProductUpdate | RemedyUpdate | IngredientUpdate
+)
 
 
 class ClinicalEntityError(Exception):
@@ -46,13 +66,16 @@ class ClinicalEntityValidationError(ClinicalEntityError):
 
 
 def model_for_kind(kind: ClinicalEntityKind):
-    if kind == "health_issue":
-        return HealthIssue
-
-    if kind == "symptom":
-        return Symptom
-
-    raise ClinicalEntityValidationError("Unsupported clinical entity kind.")
+    model = {
+        "health_issue": HealthIssue,
+        "symptom": Symptom,
+        "product": Product,
+        "remedy": Remedy,
+        "ingredient": Ingredient,
+    }.get(kind)
+    if model is None:
+        raise ClinicalEntityValidationError("Unsupported clinical entity kind.")
+    return model
 
 
 def get_locked_concept(db: Session, concept_id: uuid.UUID) -> MedicalConcept:
@@ -124,7 +147,9 @@ def check_version(entity: ClinicalEntity, expected_version: int) -> None:
         raise ClinicalEntityConflict("The record has changed. Refresh and try again.")
 
 
-def serialize_entity(entity: ClinicalEntity) -> HealthIssueRead | SymptomRead:
+def serialize_entity(
+    entity: ClinicalEntity,
+) -> HealthIssueRead | SymptomRead | ProductRead | RemedyRead | IngredientRead:
     data = {
         "concept_id": entity.concept_id,
         "canonical_name": entity.concept.canonical_name,
@@ -152,12 +177,20 @@ def serialize_entity(entity: ClinicalEntity) -> HealthIssueRead | SymptomRead:
             typical_course=entity.typical_course,
         )
 
-    return SymptomRead(
-        **data,
-        body_location=entity.body_location,
-        symptom_category=entity.symptom_category,
-        observation_type=entity.observation_type,
+    if isinstance(entity, Symptom):
+        return SymptomRead(
+            **data,
+            body_location=entity.body_location,
+            symptom_category=entity.symptom_category,
+            observation_type=entity.observation_type,
+        )
+    schema = {Product: ProductRead, Remedy: RemedyRead, Ingredient: IngredientRead}.get(
+        type(entity)
     )
+    if schema is None:
+        raise ClinicalEntityValidationError("Unsupported medical entity.")
+    fields = schema.model_fields.keys() - data.keys()
+    return schema(**data, **{field: getattr(entity, field) for field in fields})
 
 
 def list_entities(
@@ -311,12 +344,15 @@ def create_entity(
 ) -> ClinicalEntity:
     """Create a new draft clinical entity."""
 
-    if kind == "health_issue":
-        expected_schema = HealthIssueCreate
-    else:
-        expected_schema = SymptomCreate
+    expected_schema = {
+        "health_issue": HealthIssueCreate,
+        "symptom": SymptomCreate,
+        "product": ProductCreate,
+        "remedy": RemedyCreate,
+        "ingredient": IngredientCreate,
+    }.get(kind)
 
-    if not isinstance(data, expected_schema):
+    if expected_schema is None or not isinstance(data, expected_schema):
         raise ClinicalEntityValidationError("Invalid clinical entity payload.")
 
     model = model_for_kind(kind)
@@ -377,12 +413,15 @@ def update_entity(
 ) -> ClinicalEntity:
     """Update draft metadata with stale-write protection."""
 
-    if kind == "health_issue":
-        expected_schema = HealthIssueUpdate
-    else:
-        expected_schema = SymptomUpdate
+    expected_schema = {
+        "health_issue": HealthIssueUpdate,
+        "symptom": SymptomUpdate,
+        "product": ProductUpdate,
+        "remedy": RemedyUpdate,
+        "ingredient": IngredientUpdate,
+    }.get(kind)
 
-    if not isinstance(data, expected_schema):
+    if expected_schema is None or not isinstance(data, expected_schema):
         raise ClinicalEntityValidationError("Invalid clinical entity payload.")
 
     try:
@@ -470,6 +509,13 @@ def transition_entity(
             if not entity.description.strip():
                 raise ClinicalEntityValidationError(
                     "A description is required before review."
+                )
+
+            if isinstance(entity, (Product, Remedy, Ingredient)) and (
+                not entity.source_reference or not entity.source_reference.strip()
+            ):
+                raise ClinicalEntityValidationError(
+                    "A source reference is required before catalog review."
                 )
 
             entity.status = "in_review"

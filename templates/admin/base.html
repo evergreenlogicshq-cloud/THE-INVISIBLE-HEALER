@@ -230,17 +230,9 @@
                     <span>Symptoms</span>
                 </a>
 
-                <!--
-                    PHASE 11 - PRODUCTS AND REMEDIES
-
-                    Reserved for future implementation.
-                -->
-
-                <span class="nav-link nav-disabled">
-                    <span aria-hidden="true">▣</span>
-                    <span>Products &amp; Remedies</span>
-                    <small>11</small>
-                </span>
+                <a href="{{ url_for('admin_products') }}" class="nav-link {% if active_page == 'products' %}active{% endif %}" {% if active_page == 'products' %}aria-current="page"{% endif %}><span aria-hidden="true">&#9635;</span><span>Products</span></a>
+                <a href="{{ url_for('admin_remedies') }}" class="nav-link {% if active_page == 'remedies' %}active{% endif %}" {% if active_page == 'remedies' %}aria-current="page"{% endif %}><span aria-hidden="true">&#9635;</span><span>Remedies</span></a>
+                <a href="{{ url_for('admin_ingredients') }}" class="nav-link {% if active_page == 'ingredients' %}active{% endif %}" {% if active_page == 'ingredients' %}aria-current="page"{% endif %}><span aria-hidden="true">&#9635;</span><span>Ingredients</span></a>
 
                 <!--
                     PHASE 12 - RELATIONSHIPS
